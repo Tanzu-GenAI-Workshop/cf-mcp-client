@@ -1,10 +1,12 @@
-import { Component, DestroyRef, Inject, inject, signal, effect } from '@angular/core';
+import { Component, DestroyRef, inject, signal, effect } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
 import { McpServersPanelComponent } from '../mcp-servers-panel/mcp-servers-panel.component';
 import { ChatboxComponent } from '../chatbox/chatbox.component';
+import { NavigationRailComponent } from '../navigation-rail/navigation-rail.component';
+import { BottomNavigationComponent } from './bottom-navigation/bottom-navigation';
 import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 import { interval } from 'rxjs';
@@ -13,7 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent],
+  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, ChatboxComponent, NavigationRailComponent, BottomNavigationComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -113,6 +115,11 @@ export interface McpServer {
   serverName: string;
   healthy: boolean;
   tools: Tool[];
+  protocol?: {
+    type: string;
+    displayName: string;
+    bindingKey: string;
+  }; // New optional field for protocol object
 }
 
 export interface PromptArgument {

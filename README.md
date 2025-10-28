@@ -17,13 +17,16 @@ Tanzu Platform Chat (cf-mcp-client) is a Spring chatbot application that can be 
 
 ### Preparing the Application
 
-1. Build the application package:
+1. Create a directory for the application and navigate to it:
 
 ```bash
-mvn clean package
+mkdir tanzu-platform-chat
+cd tanzu-platform-chat
 ```
 
-2. Push the application to Cloud Foundry:
+2. Download the latest JAR file and manifest.yml from the [Releases page](https://github.com/cpage-pivotal/cf-mcp-client/releases) into this directory
+
+3. Push the application to Cloud Foundry from the directory containing the downloaded files:
 
 ```bash
 cf push
@@ -81,7 +84,7 @@ cf restart ai-tool-chat
 ```
 
 5. Click on the document tool on the right-side of the screen, and upload a .PDF File
-![Upload File](images/uploads.png)
+<p> <img src="images/uploads.png" alt="Upload File" width="250"> </p>
 
 Now your chatbot will respond to queries about the uploaded document
 
@@ -91,25 +94,43 @@ Now your chatbot will respond to queries about the uploaded document
 
 Model Context Protocol (MCP) servers are lightweight programs that expose specific capabilities to AI models through a standardized interface. These servers act as bridges between LLMs and external tools, data sources, or services, allowing your AI application to perform actions like searching databases, accessing files, or calling external APIs without complex custom integrations.
 
-1. Create a user-provided service that provides the URL for an existing MCP server:
+#### SSE Protocol (Server-Sent Events)
+
+1. Create a user-provided service for an SSE-based MCP server using the `mcpSseURL` tag:
 
 ```bash
-cf cups mcp-server -p '{"mcpServiceURL":"https://your-mcp-server.example.com"}'
+cf cups mcp-server-sse -p '{"uri":"https://your-sse-mcp-server.example.com"}' -t "mcpSseURL"
 ```
 
 2. Bind the MCP service to your application:
 
 ```bash
-cf bind-service ai-tool-chat mcp-server
+cf bind-service ai-tool-chat mcp-server-sse
 ```
 
-3. Restart your application:
+#### Streamable HTTP Protocol
+
+1. Create a user-provided service for a Streamable HTTP-based MCP server using the `mcpStreamableURL` tag:
+
+```bash
+cf cups mcp-server-streamable -p '{"uri":"https://your-streamable-mcp-server.example.com"}' -t "mcpStreamableURL"
+```
+
+2. Bind the MCP service to your application:
+
+```bash
+cf bind-service ai-tool-chat mcp-server-streamable
+```
+
+#### Complete the Setup
+
+3. Restart your application to apply the bindings:
 
 ```bash
 cf restart ai-tool-chat
 ```
 
-Your chatbot will now register with the MCP agent, and the LLM will be able to invoke the agent's capabilities when responding to chat requests.
+Your chatbot will now register with the MCP agents, and the LLM will be able to invoke the agents' capabilities when responding to chat requests. The application supports both SSE and Streamable HTTP protocols simultaneously.
 
 ![Binding to Agents](images/cf-agents.png)
 
