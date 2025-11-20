@@ -9,19 +9,38 @@
     @for (messageData of messagesWithReasoningFlags(); track messageData.index) {
       <div class="chat-message {{messageData.persona}}"
            role="article"
-           [attr.aria-label]="messageData.persona === 'user' ? 'Your message' : 'Assistant response'">
+           [attr.aria-label]="messageData.persona === 'user' ? 'Your message' : (messageData.persona === 'agent' ? 'Agent response from ' + messageData.agentName : 'Assistant response')"
+           [attr.data-agent-name]="messageData.agentName">
         <mat-card appearance="outlined"
-                  [attr.data-card-variant]="messageData.persona == 'user' ? 'user' : 'bot'"
+                  [attr.data-card-variant]="messageData.persona == 'user' ? 'user' : (messageData.persona == 'agent' ? 'agent' : 'bot')"
                   class="md3-chat-card">
           <mat-card-content>
             @if (messageData.persona == 'user') {
               <div class="user-message-content" role="text">{{ messageData.text }}</div>
             } @else {
               <div class="bot-message-container">
+                @if (messageData.persona === 'agent' && !messageData.typing) {
+                  <div class="agent-message-header">
+                    <mat-icon aria-hidden="true">smart_toy</mat-icon>
+                    <span class="agent-name">{{messageData.agentName}}</span>
+                  </div>
+                }
                 @if (messageData.typing) {
-                  <div class="typing__dot" role="status" aria-label="Assistant is typing">
-                    <div class="typing__dot"></div><div class="typing__dot"></div><div class="typing__dot"></div>
-                    <span class="sr-only">Assistant is thinking...</span>
+                  <div class="typing-indicator-container" role="status" aria-live="polite" aria-label="Agent is typing">
+                    @if (messageData.persona === 'agent' && messageData.statusMessage) {
+                      <!-- Agent status message during streaming -->
+                      <div class="agent-status-message">
+                        <mat-icon class="status-icon" aria-hidden="true">sync</mat-icon>
+                        <span class="status-text">{{ messageData.statusMessage }}</span>
+                      </div>
+                    } @else {
+                      <!-- Default typing indicator -->
+                      <div class="typing-indicator">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                      </div>
+                    }
                   </div>
                 } @else {
                   <div class="main-content" role="text">
