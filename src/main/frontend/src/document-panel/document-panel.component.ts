@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Inject, Input, Output, ViewChild, AfterViewInit, signal } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output, ViewChild, ElementRef, AfterViewInit, signal, computed } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,6 +10,10 @@ import { FileSizePipe } from '../pipes/file-size.pipe';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 import { PlatformMetrics } from '../app/app.component';
 import { SidenavService } from '../services/sidenav.service';
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
@@ -27,9 +31,20 @@ export class DocumentHammerConfig extends HammerGestureConfig {
   selector: 'app-document-panel',
   standalone: true,
   imports: [
-    CommonModule, MatSidenavModule, MatButtonModule, MatIconModule,
-    MatListModule, MatSnackBarModule, FileSizePipe, MatProgressBarModule, MatTooltipModule, MatChipsModule
-  ],
+    MatSidenavModule,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule,
+    MatSnackBarModule,
+    FileSizePipe,
+    MatProgressBarModule,
+    MatTooltipModule,
+    MatChipsModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule
+],
   providers: [
     { provide: HAMMER_GESTURE_CONFIG, useClass: DocumentHammerConfig }
   ],
@@ -44,10 +59,11 @@ export class DocumentPanelComponent implements AfterViewInit {
   // Add Output event emitter for document IDs changes
   @Output() documentIdsChanged = new EventEmitter<string[]>();
 
-  // Upload progress properties
-  uploadProgress = 0;
-  isUploading = false;
-  currentFileName = '';
+  // Upload progress signals
+  uploadProgress = signal(0);
+  isUploading = signal(false);
+  isProcessing = signal(false);
+  currentFileName = signal('');
 
   // Drag and drop signals (modern Angular pattern)
   isDragOver = signal(false);
@@ -58,7 +74,19 @@ export class DocumentPanelComponent implements AfterViewInit {
   swipingDocumentId = signal<string | null>(null);
   swipeDistance = signal(0);
 
+  // Manual document ID mode (advanced feature)
+  manualDocumentId = signal<string>('');
+  isAdvancedSectionExpanded = signal<boolean>(false);
+  
+  // Computed signal to check if in manual mode
+  isManualMode = computed(() => this.manualDocumentId().trim().length > 0);
+
+  /** Delay in ms to wait for Material expansion panel animation before scrolling */
+  private static readonly EXPANSION_ANIMATION_DELAY_MS = 150;
+
   @ViewChild('sidenav') sidenav!: MatSidenav;
+  @ViewChild('advancedSection') advancedSection?: ElementRef<HTMLElement>;
+  @ViewChild('sidenavContent') sidenavContent?: ElementRef<HTMLElement>;
 
   constructor(
     private httpClient: HttpClient,
@@ -155,9 +183,10 @@ export class DocumentPanelComponent implements AfterViewInit {
     formData.append('file', file);
 
     // Reset and initialize progress tracking
-    this.uploadProgress = 0;
-    this.isUploading = true;
-    this.currentFileName = file.name;
+    this.uploadProgress.set(0);
+    this.isUploading.set(true);
+    this.isProcessing.set(false);
+    this.currentFileName.set(file.name);
 
     let host: string;
     let protocol: string;
@@ -177,18 +206,24 @@ export class DocumentPanelComponent implements AfterViewInit {
         if (event.type === HttpEventType.UploadProgress) {
           // Calculate and update progress percentage
           if (event.total) {
-            this.uploadProgress = Math.round(100 * event.loaded / event.total);
+            const progress = Math.round(100 * event.loaded / event.total);
+            this.uploadProgress.set(progress);
+            // When upload bytes are fully sent, switch to processing state
+            // while waiting for the server to finish PDF extraction, splitting, and embedding
+            if (progress >= 100) {
+              this.isProcessing.set(true);
+            }
           }
         } else if (event.type === HttpEventType.Response) {
           // Upload complete - use the response which includes all documents
-          this.isUploading = false;
+          this.isUploading.set(false);
+          this.isProcessing.set(false);
           this.snackBar.open('File uploaded successfully', 'Close', {
             duration: 3000
           });
           if (event.body?.allDocuments) {
             this.documents = event.body.allDocuments;
-            const documentIds = this.documents.map(doc => doc.id);
-            this.documentIdsChanged.emit(documentIds);
+            this.emitCurrentDocumentIds();
           } else {
             this.fetchDocuments(); // Fallback to refetch
           }
@@ -196,7 +231,8 @@ export class DocumentPanelComponent implements AfterViewInit {
       },
       error: (error) => {
         // Reset progress state on error
-        this.isUploading = false;
+        this.isUploading.set(false);
+        this.isProcessing.set(false);
         console.error('Error uploading file:', error);
         this.snackBar.open('Error uploading file', 'Close', {
           duration: 3000
@@ -220,9 +256,8 @@ export class DocumentPanelComponent implements AfterViewInit {
       .subscribe({
         next: (data) => {
           this.documents = data;
-          // Emit all document IDs whenever the document list changes
-          const documentIds = this.documents.map(doc => doc.id);
-          this.documentIdsChanged.emit(documentIds);
+          // Emit document IDs based on mode
+          this.emitCurrentDocumentIds();
         },
         error: (error) => {
           console.error('Error fetching documents:', error);
@@ -248,7 +283,7 @@ export class DocumentPanelComponent implements AfterViewInit {
             duration: 3000
           });
           this.documents = [];
-          this.documentIdsChanged.emit([]);
+          this.emitCurrentDocumentIds();
         },
         error: (error) => {
           console.error('Error deleting all documents:', error);
@@ -278,8 +313,7 @@ export class DocumentPanelComponent implements AfterViewInit {
           });
           if (response?.remainingDocuments) {
             this.documents = response.remainingDocuments;
-            const documentIds = this.documents.map(doc => doc.id);
-            this.documentIdsChanged.emit(documentIds);
+            this.emitCurrentDocumentIds();
           } else {
             this.fetchDocuments(); // Fallback to refetch
           }
@@ -360,6 +394,39 @@ export class DocumentPanelComponent implements AfterViewInit {
       return `${diffDays - 1} days ago`;
     } else {
       return date.toLocaleDateString();
+    }
+  }
+
+  // Manual document ID methods
+  onManualDocumentIdChange(value: string): void {
+    this.manualDocumentId.set(value);
+    this.emitCurrentDocumentIds();
+  }
+
+  onAdvancedSectionOpened(): void {
+    this.isAdvancedSectionExpanded.set(true);
+    // Scroll the advanced section into view after expansion animation starts
+    setTimeout(() => {
+      this.advancedSection?.nativeElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
+      });
+    }, DocumentPanelComponent.EXPANSION_ANIMATION_DELAY_MS);
+  }
+
+  onAdvancedSectionClosed(): void {
+    this.isAdvancedSectionExpanded.set(false);
+  }
+
+  // Helper method to emit the appropriate document IDs based on current mode
+  private emitCurrentDocumentIds(): void {
+    if (this.isManualMode()) {
+      // In manual mode, emit only the manual document ID
+      this.documentIdsChanged.emit([this.manualDocumentId().trim()]);
+    } else {
+      // In normal mode, emit all uploaded document IDs
+      const documentIds = this.documents.map(doc => doc.id);
+      this.documentIdsChanged.emit(documentIds);
     }
   }
 }

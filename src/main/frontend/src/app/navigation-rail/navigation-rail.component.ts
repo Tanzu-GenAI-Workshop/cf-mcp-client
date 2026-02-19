@@ -1,8 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { SidenavService } from '../../services/sidenav.service';
+import { AuthService } from '../../services/auth.service';
 import { PlatformMetrics } from '../app.component';
 
 @Component({
@@ -19,14 +20,11 @@ export class NavigationRailComponent {
     embeddingModel: '',
     vectorStoreName: '',
     mcpServers: [],
-    prompts: {
-      totalPrompts: 0,
-      serversWithPrompts: 0,
-      available: false,
-      promptsByServer: {}
-    },
-    a2aAgents: []
+    a2aAgents: [],
+    memoryType: 'TRANSIENT'
   };
+
+  private readonly authService = inject(AuthService);
 
   constructor(private sidenavService: SidenavService) {}
 
@@ -117,5 +115,9 @@ export class NavigationRailComponent {
       default:
         return { show: false, color: '', icon: '' };
     }
+  }
+
+  onLogout(): void {
+    this.authService.logout();
   }
 }

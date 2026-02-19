@@ -1,5 +1,10 @@
 package org.tanzu.mcpclient.document;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
@@ -10,15 +15,25 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class DocumentService {
+    private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
+
     private final VectorStore vectorStore;
-    private final TokenTextSplitter tokenSplitter = new TokenTextSplitter();
+    private final TokenTextSplitter tokenSplitter = TokenTextSplitter.builder()
+            .withChunkSize(512)
+            .withMinChunkSizeChars(100)
+            .withMinChunkLengthToEmbed(5)
+            .withMaxNumChunks(10000)
+            .withKeepSeparator(true)
+            .build();
     private final List<DocumentInfo> documentList = new ArrayList<>();
 
     public final static String DOCUMENT_ID = "documentId";
@@ -82,14 +97,65 @@ public class DocumentService {
     }
 
     private void writeToVectorStore(MultipartFile file, String fileId) {
-        Resource resource = file.getResource();
-        PagePdfDocumentReader pdfReader = new PagePdfDocumentReader(resource, PdfDocumentReaderConfig.defaultConfig());
+        List<Document> rawDocuments;
 
-        List<Document> documents = tokenSplitter.split(pdfReader.read());
-        for (Document document : documents) {
-            document.getMetadata().put(DOCUMENT_ID, fileId);
+        try {
+            Resource resource = file.getResource();
+            var pdfReader = new PagePdfDocumentReader(resource, PdfDocumentReaderConfig.defaultConfig());
+            rawDocuments = pdfReader.read();
+        } catch (IllegalArgumentException | StackOverflowError e) {
+            // ForkPDFLayoutTextStripper has known issues with certain PDFs:
+            // - Broken Comparator: "Comparison method violates its general contract!" (IllegalArgumentException)
+            // - Catastrophic regex backtracking in text position processing (StackOverflowError)
+            // Fall back to plain PDFBox text extraction which avoids both issues.
+            logger.warn("Layout-based PDF extraction failed for file {}, falling back to plain text extraction: {}",
+                    file.getOriginalFilename(), e.getClass().getSimpleName() + ": " + e.getMessage());
+            rawDocuments = readWithPlainTextExtractor(file);
         }
-        vectorStore.write(documents);
+
+        try {
+            List<Document> documents = tokenSplitter.split(rawDocuments);
+            List<Document> sanitizedDocuments = new ArrayList<>();
+            for (Document document : documents) {
+                // Remove null characters that PostgreSQL can't handle
+                String sanitizedText = document.getText().replace("\u0000", "");
+                Document sanitizedDoc = new Document(sanitizedText, document.getMetadata());
+                sanitizedDoc.getMetadata().put(DOCUMENT_ID, fileId);
+                sanitizedDocuments.add(sanitizedDoc);
+            }
+            vectorStore.write(sanitizedDocuments);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to process PDF: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Fallback PDF reader using Apache PDFBox's plain PDFTextStripper.
+     * Avoids the layout-aware ForkPDFLayoutTextStripper which has a broken comparator
+     * that fails on PDFs with complex text positioning.
+     */
+    private List<Document> readWithPlainTextExtractor(MultipartFile file) {
+        try (PDDocument pdDocument = Loader.loadPDF(file.getBytes())) {
+            var stripper = new PDFTextStripper();
+            int totalPages = pdDocument.getNumberOfPages();
+            List<Document> documents = new ArrayList<>();
+
+            for (int page = 1; page <= totalPages; page++) {
+                stripper.setStartPage(page);
+                stripper.setEndPage(page);
+                String pageText = stripper.getText(pdDocument);
+
+                if (pageText != null && !pageText.isBlank()) {
+                    documents.add(new Document(pageText, Map.of("page_number", page, "total_pages", totalPages)));
+                }
+            }
+
+            logger.info("Plain text extraction completed for {}: {} pages yielded {} documents",
+                    file.getOriginalFilename(), totalPages, documents.size());
+            return documents;
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to read PDF file: " + e.getMessage(), e);
+        }
     }
 
     public void deleteDocuments() {

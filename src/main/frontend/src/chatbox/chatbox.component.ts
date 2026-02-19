@@ -1,14 +1,12 @@
 import {
-  afterNextRender,
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
   Inject,
-  Injector,
   Input,
   NgZone,
   OnDestroy,
-  runInInjectionContext,
   ViewChild,
   signal,
   computed,
@@ -16,7 +14,7 @@ import {
 } from '@angular/core';
 import {DOCUMENT} from '@angular/common';
 import {HttpParams, HttpClient} from '@angular/common/http';
-import {MatIconButton, MatFabButton} from '@angular/material/button';
+import {MatFabButton, MatMiniFabButton} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import {MatFormField} from '@angular/material/form-field';
 import {MatInput, MatInputModule} from '@angular/material/input';
@@ -26,11 +24,6 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatDialog} from '@angular/material/dialog';
 import {MarkdownComponent} from 'ngx-markdown';
 import {PlatformMetrics} from '../app/app.component';
-import {
-  PromptSelectionDialogComponent,
-  PromptSelectionResult
-} from '../prompt-selection-dialog/prompt-selection-dialog.component';
-import {PromptResolutionService} from '../services/prompt-resolution.service';
 import {MatTooltip} from '@angular/material/tooltip';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ThinkTagParser} from './think-tag-parser';
@@ -75,12 +68,12 @@ interface StatusUpdate {
 @Component({
   selector: 'app-chatbox',
   standalone: true,
-  imports: [FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatIconButton, MatFabButton, TextFieldModule, MatTooltip, MatExpansionModule],
+  imports: [FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatFabButton, MatMiniFabButton, TextFieldModule, MatTooltip, MatExpansionModule],
   templateUrl: './chatbox.component.html',
   styleUrl: './chatbox.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChatboxComponent implements OnDestroy {
+export class ChatboxComponent implements OnDestroy, AfterViewInit {
   @Input() documentIds: string[] = [];
 
   @Input() set metrics(value: PlatformMetrics) {
@@ -96,13 +89,8 @@ export class ChatboxComponent implements OnDestroy {
     embeddingModel: '',
     vectorStoreName: '',
     mcpServers: [],
-    prompts: {
-      totalPrompts: 0,
-      serversWithPrompts: 0,
-      available: false,
-      promptsByServer: {}
-    },
-    a2aAgents: []
+    a2aAgents: [],
+    memoryType: 'TRANSIENT'
   });
 
   // State signals
@@ -111,9 +99,15 @@ export class ChatboxComponent implements OnDestroy {
   private readonly _isStreaming = signal<boolean>(false);
   private readonly _isConnecting = signal<boolean>(false);
 
+  // Scroll tracking signals
+  private readonly _userHasScrolledUp = signal<boolean>(false);
+  private readonly scrollThreshold = 100; // pixels from bottom to consider "at bottom"
+
   // Public readonly signals
   readonly messages = this._messages.asReadonly();
   readonly chatMessage = this._chatMessage.asReadonly();
+  readonly userHasScrolledUp = this._userHasScrolledUp.asReadonly();
+  readonly isStreaming = this._isStreaming.asReadonly();
 
   // Computed signals for derived state
   readonly canSendMessage = computed(() =>
@@ -134,14 +128,6 @@ export class ChatboxComponent implements OnDestroy {
       }
     }
     return null;
-  });
-
-  readonly hasAvailablePrompts = computed(() => {
-    const metrics = this._metricsInput();
-    return metrics &&
-      metrics.prompts &&
-      metrics.prompts.available &&
-      metrics.prompts.totalPrompts > 0;
   });
 
   readonly sendButtonText = computed(() => {
@@ -220,16 +206,15 @@ export class ChatboxComponent implements OnDestroy {
     reasoningContent: string;
     typing: boolean;
   } | null = null;
+  private scrollListenerCleanup?: () => void;
 
   @ViewChild("chatboxMessages") private chatboxMessages?: ElementRef<HTMLDivElement>;
 
   constructor(
-    private injector: Injector,
     @Inject(DOCUMENT) private document: Document,
-    private ngZone: NgZone,
     private dialog: MatDialog,
-    private promptResolutionService: PromptResolutionService,
-    private http: HttpClient
+    private http: HttpClient,
+    private ngZone: NgZone
   ) {
     // Set up host and protocol
     if (this.document.location.hostname === 'localhost') {
@@ -243,11 +228,15 @@ export class ChatboxComponent implements OnDestroy {
     this.setupEffects();
   }
   
+  ngAfterViewInit(): void {
+    this.setupScrollListener();
+  }
+
   ngOnDestroy(): void {
     if (this.updateBatchTimeout) {
       clearTimeout(this.updateBatchTimeout);
     }
-    
+
     // Flush any pending update before destroying
     if (this.pendingUpdate) {
       this.immediateUpdateMessage(
@@ -256,16 +245,44 @@ export class ChatboxComponent implements OnDestroy {
         this.pendingUpdate.typing
       );
     }
+
+    // Clean up scroll listener
+    if (this.scrollListenerCleanup) {
+      this.scrollListenerCleanup();
+    }
+  }
+
+  private setupScrollListener(): void {
+    if (!this.chatboxMessages) return;
+
+    const element = this.chatboxMessages.nativeElement;
+    const handleScroll = () => {
+      const isNearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < this.scrollThreshold;
+      // Only update if the value changes to avoid unnecessary signal updates
+      if (this._userHasScrolledUp() !== !isNearBottom) {
+        this._userHasScrolledUp.set(!isNearBottom);
+      }
+    };
+
+    // Run outside Angular zone for performance (scroll events fire frequently)
+    this.ngZone.runOutsideAngular(() => {
+      element.addEventListener('scroll', handleScroll, { passive: true });
+    });
+
+    this.scrollListenerCleanup = () => {
+      element.removeEventListener('scroll', handleScroll);
+    };
   }
 
   private setupEffects(): void {
-    // Optimized auto-scroll - only trigger on message count changes, not content changes
+    // Auto-scroll effect - scrolls during streaming if user hasn't scrolled up
     effect(() => {
       const messageCount = this._messages().length;
       const lastBotIndex = this.lastBotMessageIndex();
-      
-      if (messageCount > 0) {
-        // Only scroll if we have a new message or the last bot message finished typing
+      const userScrolledUp = this._userHasScrolledUp();
+
+      if (messageCount > 0 && !userScrolledUp) {
+        // Scroll on new messages or when streaming completes
         const lastBot = lastBotIndex >= 0 ? this._messages()[lastBotIndex] : null;
         if (!lastBot?.typing) {
           // Use requestAnimationFrame for better performance
@@ -283,18 +300,6 @@ export class ChatboxComponent implements OnDestroy {
       if (streaming || connecting) {
         console.log('Chat state changed:', { streaming, connecting });
       }
-    });
-
-    // Optimized metrics logging - only log meaningful changes
-    effect(() => {
-      const hasAvailablePrompts = this.hasAvailablePrompts();
-      const chatModel = this._metricsInput().chatModel;
-      
-      console.log('Chat capabilities:', {
-        hasModel: !!chatModel,
-        hasPrompts: hasAvailablePrompts,
-        modelName: chatModel
-      });
     });
 
     // Model validation - only warn when user tries to send without model
@@ -655,26 +660,6 @@ export class ChatboxComponent implements OnDestroy {
     }
   }
 
-  openPromptSelection(): void {
-    if (!this.hasAvailablePrompts()) {
-      return;
-    }
-
-    const dialogRef = this.dialog.open(PromptSelectionDialogComponent, {
-      data: { metrics: this._metricsInput() },
-      width: '90vw',
-      maxWidth: '800px',
-      maxHeight: '80vh',
-      panelClass: 'prompt-selection-dialog-container'
-    });
-
-    dialogRef.afterClosed().subscribe((result: PromptSelectionResult) => {
-      if (result) {
-        this.handlePromptSelection(result);
-      }
-    });
-  }
-
   private addUserMessage(text: string): void {
     this._messages.update(msgs => [
       ...msgs,
@@ -756,6 +741,11 @@ export class ChatboxComponent implements OnDestroy {
           this.pendingUpdate.typing
         );
         this.pendingUpdate = null;
+
+        // Auto-scroll during streaming if user hasn't scrolled up
+        if (!this._userHasScrolledUp()) {
+          requestAnimationFrame(() => this.scrollChatToBottom());
+        }
       }
       this.updateBatchTimeout = undefined;
     }, 16); // ~60fps update rate
@@ -811,97 +801,43 @@ export class ChatboxComponent implements OnDestroy {
   }
 
   private handleChatError(errorMessage: string): void {
-    this.ngZone.run(() => {
-      this.setBotMessageTyping(false);
-      if (this.lastBotMessage()?.text === '') {
-        this._messages.update(msgs => {
-          const lastIndex = msgs.length - 1;
-          if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
-            return [
-              ...msgs.slice(0, lastIndex),
-              { ...msgs[lastIndex], text: errorMessage, typing: false }
-            ];
-          }
-          return msgs;
-        });
-      }
-      this._isStreaming.set(false);
-      this._isConnecting.set(false);
-    });
-  }
-
-  private handleServerError(errorDetails: ErrorInfo): void {
-    this.ngZone.run(() => {
-      this.setBotMessageTyping(false);
+    this.setBotMessageTyping(false);
+    if (this.lastBotMessage()?.text === '') {
       this._messages.update(msgs => {
         const lastIndex = msgs.length - 1;
         if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
           return [
             ...msgs.slice(0, lastIndex),
-            { 
-              ...msgs[lastIndex], 
-              text: errorDetails.message, 
-              typing: false,
-              error: errorDetails,
-              showError: false
-            }
+            { ...msgs[lastIndex], text: errorMessage, typing: false }
           ];
         }
         return msgs;
       });
-      this._isStreaming.set(false);
-      this._isConnecting.set(false);
-    });
+    }
+    this._isStreaming.set(false);
+    this._isConnecting.set(false);
   }
 
-  private handlePromptSelection(result: PromptSelectionResult): void {
-    const promptId = `${result.prompt.serverId}:${result.prompt.name}`;
-
-    // If prompt has no arguments, use it directly
-    if (!result.prompt.arguments || result.prompt.arguments.length === 0) {
-      this.insertPromptIntoChat(result.prompt.name, result.prompt.description);
-      return;
-    }
-
-    // Resolve prompt with arguments
-    this.promptResolutionService.resolvePrompt({
-      promptId: promptId,
-      arguments: result.arguments
-    }).subscribe({
-      next: (resolvedPrompt) => {
-        this.insertResolvedPromptIntoChat(resolvedPrompt);
-      },
-      error: (error) => {
-        console.error('Error resolving prompt:', error);
-        // Fallback: insert prompt name
-        this.insertPromptIntoChat(result.prompt.name, 'Failed to resolve prompt with arguments');
+  private handleServerError(errorDetails: ErrorInfo): void {
+    this.setBotMessageTyping(false);
+    this._messages.update(msgs => {
+      const lastIndex = msgs.length - 1;
+      if (lastIndex >= 0 && msgs[lastIndex].persona === 'bot') {
+        return [
+          ...msgs.slice(0, lastIndex),
+          {
+            ...msgs[lastIndex],
+            text: errorDetails.message,
+            typing: false,
+            error: errorDetails,
+            showError: false
+          }
+        ];
       }
+      return msgs;
     });
-  }
-
-  private insertPromptIntoChat(promptName: string, description?: string): void {
-    const content = description || promptName;
-    this._chatMessage.set(content);
-    this.sendChatMessage();
-  }
-
-  private insertResolvedPromptIntoChat(resolvedPrompt: any): void {
-    let content: string;
-
-    if (resolvedPrompt.messages && resolvedPrompt.messages.length > 0) {
-      // Use structured messages
-      content = resolvedPrompt.messages
-        .map((msg: any) => msg.content)
-        .join('\n\n');
-    } else if (resolvedPrompt.content) {
-      // Use direct content
-      content = resolvedPrompt.content;
-    } else {
-      content = 'Resolved prompt content';
-    }
-
-    this._chatMessage.set(content);
-    this.sendChatMessage();
+    this._isStreaming.set(false);
+    this._isConnecting.set(false);
   }
 
   private streamChatResponse(params: HttpParams): Promise<void> {
@@ -916,32 +852,28 @@ export class ChatboxComponent implements OnDestroy {
 
       eventSource.onopen = () => {
         console.log('EventSource connection opened');
-        this.ngZone.run(() => {
-          this._isConnecting.set(false);
-          this._isStreaming.set(true);
-        });
+        this._isConnecting.set(false);
+        this._isStreaming.set(true);
       };
 
       eventSource.onmessage = (event) => {
-        this.ngZone.run(() => {
-          if (isFirstChunk) {
-            this.setBotMessageTyping(false);
-            isFirstChunk = false;
-          }
+        if (isFirstChunk) {
+          this.setBotMessageTyping(false);
+          isFirstChunk = false;
+        }
 
-          // Handle JSON chunks
-          let chunk: string;
-          try {
-            const parsed = JSON.parse(event.data);
-            chunk = parsed.content || event.data;
-          } catch (e) {
-            chunk = event.data;
-          }
+        // Handle JSON chunks
+        let chunk: string;
+        try {
+          const parsed = JSON.parse(event.data);
+          chunk = parsed.content || event.data;
+        } catch (e) {
+          chunk = event.data;
+        }
 
-          if (chunk && chunk.length > 0) {
-            this.updateBotMessage(chunk);
-          }
-        });
+        if (chunk && chunk.length > 0) {
+          this.updateBotMessage(chunk);
+        }
       };
 
       eventSource.onerror = (error) => {
@@ -953,15 +885,13 @@ export class ChatboxComponent implements OnDestroy {
 
       // Listen for error events
       eventSource.addEventListener('error', (event: MessageEvent) => {
-        this.ngZone.run(() => {
-          try {
-            const errorDetails: ErrorInfo = JSON.parse(event.data);
-            this.handleServerError(errorDetails);
-          } catch (e) {
-            console.error('Failed to parse error details:', e);
-            this.handleChatError('Sorry, I encountered an error processing your request.');
-          }
-        });
+        try {
+          const errorDetails: ErrorInfo = JSON.parse(event.data);
+          this.handleServerError(errorDetails);
+        } catch (e) {
+          console.error('Failed to parse error details:', e);
+          this.handleChatError('Sorry, I encountered an error processing your request.');
+        }
         eventSource.close();
         resolve();
       });
@@ -969,27 +899,22 @@ export class ChatboxComponent implements OnDestroy {
       // Listen for successful completion
       eventSource.addEventListener('close', () => {
         eventSource.close();
-        this.ngZone.run(() => {
-          this._isStreaming.set(false);
-          this._isConnecting.set(false);
-        });
+        this._isStreaming.set(false);
+        this._isConnecting.set(false);
         resolve();
       });
     });
   }
 
+  scrollToBottomAndResume(): void {
+    this._userHasScrolledUp.set(false);
+    this.scrollChatToBottom();
+  }
+
   private scrollChatToBottom(): void {
-    runInInjectionContext(this.injector, () => {
-      afterNextRender({
-        read: () => {
-          if (this.chatboxMessages) {
-            this.chatboxMessages.nativeElement.lastElementChild?.scrollIntoView({
-              behavior: "smooth",
-              block: "start"
-            });
-          }
-        }
-      });
-    });
+    if (this.chatboxMessages) {
+      const element = this.chatboxMessages.nativeElement;
+      element.scrollTop = element.scrollHeight;
+    }
   }
 }

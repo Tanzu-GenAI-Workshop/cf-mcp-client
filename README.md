@@ -32,6 +32,60 @@ cd tanzu-platform-chat
 cf push
 ```
 
+### Authentication
+
+The application requires authentication to access. There are two authentication methods available: access code and SSO. Both can be used simultaneously.
+
+#### Access Code Authentication
+
+By default, the application is protected with an access code. Users enter the code on the login page to gain access.
+
+If `APP_AUTH_SECRET` is not set, the access code defaults to `changeme`.
+
+**To override the default access code**, you have two options:
+
+**Option 1: Set as an environment variable**
+
+```bash
+cf set-env ai-tool-chat APP_AUTH_SECRET my-secret-code
+cf restart ai-tool-chat
+```
+
+**Option 2: Add to manifest.yml**
+
+Add the environment variable to your `manifest.yml`:
+
+```yaml
+env:
+  JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+  APP_AUTH_SECRET: ((APP_AUTH_SECRET))
+```
+
+Then provide the variable at push time:
+
+```bash
+cf push --var APP_AUTH_SECRET=my-secret-code
+```
+
+#### SSO Authentication (Optional)
+
+Single Sign-On is automatically enabled when a `p-identity` service is bound to the application. The login page will display a "Sign in with SSO" button alongside the access code form.
+
+1. Create a SSO service instance:
+
+```bash
+cf create-service p-identity uaa my-sso
+```
+
+2. Bind the service to your application:
+
+```bash
+cf bind-service ai-tool-chat my-sso
+cf restart ai-tool-chat
+```
+
+The SSO provider is auto-detected from the Cloud Foundry service binding — no additional configuration is required.
+
 ### Binding to Large Language Models (LLM's)
 
 1. Create a service instance that provides chat LLM capabilities:
@@ -94,7 +148,9 @@ Now your chatbot will respond to queries about the uploaded document
 
 Model Context Protocol (MCP) servers are lightweight programs that expose specific capabilities to AI models through a standardized interface. These servers act as bridges between LLMs and external tools, data sources, or services, allowing your AI application to perform actions like searching databases, accessing files, or calling external APIs without complex custom integrations.
 
-#### SSE Protocol (Server-Sent Events)
+#### Method 1: Using User-provided Services
+
+##### SSE Protocol (Server-Sent Events) 
 
 1. Create a user-provided service for an SSE-based MCP server using the `mcpSseURL` tag:
 
@@ -108,12 +164,46 @@ cf cups mcp-server-sse -p '{"uri":"https://your-sse-mcp-server.example.com"}' -t
 cf bind-service ai-tool-chat mcp-server-sse
 ```
 
-#### Streamable HTTP Protocol
+##### Streamable HTTP Protocol
 
 1. Create a user-provided service for a Streamable HTTP-based MCP server using the `mcpStreamableURL` tag:
 
 ```bash
 cf cups mcp-server-streamable -p '{"uri":"https://your-streamable-mcp-server.example.com"}' -t "mcpStreamableURL"
+```
+
+2. Bind the MCP service to your application:
+
+```bash
+cf bind-service ai-tool-chat mcp-server-streamable
+```
+
+#### Method 2: Using Service Publisher provided Services
+
+A common use case for the [Service Publisher tile](https://techdocs.broadcom.com/us/en/vmware-tanzu/platform/service-publisher/10-3/srvc-pub/index.html) is to publish MCP servers and make them available on the Tanzu Platform service marketplace. The service binding will include an API Key and URI allowing for more secure provisioning of access to MCP servers. The application will add the API key to requests to the MCP server.
+
+Published services will appear on the marketplace with their own service broker and selection of plans.
+
+##### SSE Protocol (Server-Sent Events) 
+
+1. Create a service from a published service broker for an SSE-based MCP server using the `mcpSseURL` tag:
+
+```bash
+cf create-service your-published-service service-plan mcp-server-sse -t "mcpSseURL"
+```
+
+2. Bind the MCP service to your application:
+
+```bash
+cf bind-service ai-tool-chat mcp-server-sse
+```
+
+##### Streamable HTTP Protocol
+
+1. Create a service from a published service broker for a Streamable HTTP-based MCP server using the `mcpStreamableURL` tag:
+
+```bash
+cf create-service your-published-service service-plan mcp-server-streamable -t "mcpStreamableURL"
 ```
 
 2. Bind the MCP service to your application:
@@ -189,6 +279,12 @@ You can bind multiple A2A agents simultaneously, each providing specialized capa
 
 If you are bound to a vector database and an embedding model, then your chat memory will persist across application restarts and scaling.
 
+
+
 1. Follow the instructions above in [Binding to Vector Databases](#binding-to-vector-databases)
 
 ![Binding to Memory](images/cf-memory.png)
+
+
+## Disclaimer
+This repository is an unofficial project provided “as is.” It is not supported or endorsed by any organization, and no warranty or guarantee of functionality is provided. Use at your own discretion.

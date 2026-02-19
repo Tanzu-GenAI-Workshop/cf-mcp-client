@@ -4,19 +4,22 @@ import io.modelcontextprotocol.client.McpSyncClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.api.BaseChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.tanzu.mcpclient.metrics.McpServer;
-import org.tanzu.mcpclient.model.ModelDiscoveryService;
 import org.tanzu.mcpclient.mcp.McpClientFactory;
 import org.tanzu.mcpclient.mcp.McpDiscoveryService;
 import org.tanzu.mcpclient.mcp.McpServerService;
 import org.tanzu.mcpclient.mcp.ProtocolType;
+import org.tanzu.mcpclient.memory.MemoryConfiguration;
+import org.tanzu.mcpclient.memory.MemoryPreferenceService;
+import org.tanzu.mcpclient.metrics.McpServer;
+import org.tanzu.mcpclient.model.ModelDiscoveryService;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -56,7 +59,7 @@ public class ChatConfiguration {
         // Initialize protocol-aware services from new discovery method
         List<McpDiscoveryService.McpServiceConfiguration> serviceConfigs = mcpDiscoveryService.getMcpServicesWithProtocol();
         this.mcpServerServices.addAll(serviceConfigs.stream()
-                .map(config -> new McpServerService(config.serviceName(), config.serverUrl(), config.protocol(), mcpClientFactory))
+                .map(config -> new McpServerService(config.serviceName(), config.serverUrl(), config.protocol(), config.headers(), mcpClientFactory))
                 .toList());
 
         logger.info("ChatConfiguration initialized with {} MCP server services", mcpServerServices.size());
@@ -79,20 +82,27 @@ public class ChatConfiguration {
     /**
      * UPDATED: Creates ChatService bean using McpToolCallbackCacheService for cached tool callbacks.
      * Now leverages Spring AI 1.1.0-RC1's event-driven caching for improved performance.
+     * Updated to support dynamic memory advisor selection based on user preference.
      */
     @Bean
     public ChatService chatService(ChatClient.Builder chatClientBuilder,
-                                   BaseChatMemoryAdvisor memoryAdvisor,
+                                   MessageChatMemoryAdvisor transientMemoryAdvisor,
+                                   VectorStoreChatMemoryAdvisor persistentMemoryAdvisor,
+                                   MemoryPreferenceService memoryPreferenceService,
+                                   MemoryConfiguration memoryConfiguration,
                                    VectorStore vectorStore,
                                    org.tanzu.mcpclient.mcp.McpToolCallbackCacheService toolCallbackCacheService,
                                    ModelDiscoveryService modelDiscoveryService) {
 
-        logger.info("Creating ChatService with cached tool callbacks from {} MCP server(s)",
+        logger.info("Creating ChatService with dynamic memory advisor selection from {} MCP server(s)",
                 mcpServerServices.size());
 
         return new ChatService(
                 chatClientBuilder,
-                memoryAdvisor,
+                transientMemoryAdvisor,
+                persistentMemoryAdvisor,
+                memoryPreferenceService,
+                memoryConfiguration,
                 mcpServerServices, // Pass McpServerService instances for reference
                 vectorStore,
                 toolCallbackCacheService, // Use caching service instead of factory
