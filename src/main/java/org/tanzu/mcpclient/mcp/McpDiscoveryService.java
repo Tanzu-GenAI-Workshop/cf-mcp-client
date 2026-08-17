@@ -192,8 +192,8 @@ public class McpDiscoveryService {
         if (service.existsByTagIgnoreCase(TAG_MCP_SSE)) {
             String uri = credentials.getString(CREDENTIALS_URI_KEY);
             if (isValidUrl(uri)) {
-                logger.debug("Found MCP SSE service '{}' via tag with URI: {}",
-                    service.getName(), uri);
+                logger.info("Found explicit MCP service '{}' via tag '{}', uri: '{}'",
+                    service.getName(), TAG_MCP_SSE, uri);
                 return new McpServiceConfiguration(
                     service.getName(),
                     uri,
@@ -271,38 +271,56 @@ public class McpDiscoveryService {
             return Map.of();
         }
 
+        Map<String, String> result = new java.util.HashMap<>();
         Map<String, Object> credentialsMap = credentials.getMap();
-        if (credentialsMap == null || !credentialsMap.containsKey("headers")) {
-            return Map.of();
-        }
-
-        Object headersObj = credentialsMap.get("headers");
-        if (!(headersObj instanceof Map)) {
-            logger.debug("Headers credential is not a map, ignoring");
-            return Map.of();
-        }
-
-        try {
-            Map<String, Object> headersMap = (Map<String, Object>) headersObj;
-            Map<String, String> result = new java.util.HashMap<>();
-            
-            for (Map.Entry<String, Object> entry : headersMap.entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                if (value != null) {
-                    result.put(key, value.toString());
+        
+        if (credentialsMap != null && credentialsMap.containsKey("headers")) {
+            Object headersObj = credentialsMap.get("headers");
+            if (headersObj instanceof Map) {
+                try {
+                    Map<String, Object> headersMap = (Map<String, Object>) headersObj;
+                    for (Map.Entry<String, Object> entry : headersMap.entrySet()) {
+                        String key = entry.getKey();
+                        Object value = entry.getValue();
+                        if (value != null) {
+                            result.put(key, value.toString());
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error extracting explicit headers from credentials: {}", e.getMessage());
                 }
             }
-
-            if (!result.isEmpty()) {
-                logger.debug("Extracted {} header(s) from credentials", result.size());
-            }
-            
-            return Map.copyOf(result);
-        } catch (Exception e) {
-            logger.warn("Error extracting headers from credentials: {}", e.getMessage());
-            return Map.of();
         }
+        
+        if (credentialsMap != null && credentialsMap.containsKey("oauth")) {
+            try {
+                Map<String, Object> oauth = (Map<String, Object>) credentialsMap.get("oauth");
+                String clientId = (String) oauth.get("client_id");
+                String clientSecret = (String) oauth.get("client_secret");
+                String issuerUri = (String) oauth.get("issuer_uri");
+                if (clientId != null && clientSecret != null && issuerUri != null) {
+                    org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+                    org.springframework.http.HttpHeaders authHeaders = new org.springframework.http.HttpHeaders();
+                    authHeaders.setBasicAuth(clientId, clientSecret);
+                    authHeaders.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
+                    org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>("grant_type=client_credentials", authHeaders);
+                    
+                    Map response = restTemplate.postForObject(issuerUri, request, Map.class);
+                    if (response != null && response.containsKey("access_token")) {
+                        result.put("Authorization", "Bearer " + response.get("access_token"));
+                        logger.info("Successfully fetched OAuth token from {}", issuerUri);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Failed to fetch OAuth token: {}", e.getMessage());
+            }
+        }
+
+        if (!result.isEmpty()) {
+            logger.debug("Extracted {} header(s) from credentials", result.size());
+        }
+        
+        return Map.copyOf(result);
     }
 
     /**

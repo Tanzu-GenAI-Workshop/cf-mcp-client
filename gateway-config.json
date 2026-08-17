@@ -1,0 +1,16 @@
+{
+  "routes": [
+    {
+      "path": "/**",
+      "uri": "http://cf-chat.apps.internal:8080",
+      "filters": [
+        "TokenRelay"
+      ],
+      "sso-enabled": true
+    }
+  ],
+  "sso": {
+    "issuer-uri": "https://uaa.system.tas.tanzu.rocks/oauth/token",
+    "scope": ["openid", "mcp.execute"]
+  }
+}

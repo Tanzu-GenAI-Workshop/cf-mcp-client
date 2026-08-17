@@ -8,12 +8,12 @@ applications:
     path: target/cf-mcp-client-2.9.1.jar
     env:
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
-    services:
-    - chat-llm
-    - embeddings-llm
-    - vector-db
-    - cloud-foundry-mcp-server
-    - time-mcp-server
-    - vcenter-mcp-server
+    #services:
+    # - chat-llm
+    #- embeddings-llm
+    #- vector-db
+    #- cloud-foundry-mcp-server
+    #- time-mcp-server
+    #- vcenter-mcp-server
 
 

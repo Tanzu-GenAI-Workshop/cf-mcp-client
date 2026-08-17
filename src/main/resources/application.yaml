@@ -11,3 +11,11 @@ spring:
   sql:
     init:
       mode: never
+  ai:
+    mcp:
+      client:
+        enabled: true
+        type: SYNC # or ASYNC
+        name: "ai-tool-chat"
+        # Spring Cloud Bindings library will automatically map the 
+        # VCAP_SERVICES credentials to these properties at runtime.
