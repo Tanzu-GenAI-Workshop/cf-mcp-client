@@ -30,11 +30,13 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0;
+  /* Reserve the rail: this element is position:fixed, so it does not inherit
+     main's padding-right and would otherwise slide under the rail on resize. */
+  right: var(--md-nav-rail-width, 0px);
   top: var(--md-spacing-16); /* Same as toolbar height */
   padding: var(--md-layout-margin); /* Responsive padding */
-  width: min(90%, 1200px);
-  margin: 0 auto;
+  width: auto;
+  margin: 0;
   display: flex;
   flex-direction: column;
   z-index: 1;
@@ -744,7 +746,7 @@ button:active:not(:disabled) {
 /* Responsive Design using Material Design 3 breakpoints */
 @media (min-width: 1240px) {
   .chatbox {
-    width: min(85%, 1200px);
+    width: auto;
     padding: var(--md-spacing-6); /* 24px using Material spacing */
   }
   .chat-message {

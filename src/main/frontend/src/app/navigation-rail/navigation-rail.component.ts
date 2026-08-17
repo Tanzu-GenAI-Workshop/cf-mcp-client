@@ -1,4 +1,5 @@
 import { Component, Input, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { NgClass } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -25,6 +26,9 @@ export class NavigationRailComponent {
   };
 
   private readonly authService = inject(AuthService);
+
+  /** Which panel is open, so the rail can show the current destination. */
+  readonly activePanel = toSignal(inject(SidenavService).activePanel$, { initialValue: null });
 
   constructor(private sidenavService: SidenavService) {}
 

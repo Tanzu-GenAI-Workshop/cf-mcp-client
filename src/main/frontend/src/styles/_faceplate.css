@@ -81,6 +81,7 @@
   --fp-radius-panel: 10px;
   --fp-radius-control: 8px;
   --fp-target-min: 44px;
+  --fp-panel-width: 380px;
 }
 
 /* Faceplate glyphs are stroke-drawn, so the default fill would flood them.
@@ -94,6 +95,9 @@
 .mat-mdc-chip.mat-mdc-standard-chip {
   --mdc-chip-container-shape-radius: var(--fp-radius-pill);
   --mdc-chip-container-height: 28px;
+  --mdc-chip-with-avatar-avatar-size: 15px;
+  padding-left: 10px;
+  padding-right: 12px;
   border-radius: var(--fp-radius-pill);
   border: 1px solid var(--md-sys-color-outline-variant);
   background: var(--md-sys-color-surface-container);
@@ -108,6 +112,8 @@
   height: 15px;
   font-size: 15px;
   flex: none;
+  margin-left: 0;
+  margin-right: 6px;
 }
 
 .mat-mdc-chip.mat-mdc-standard-chip .mat-mdc-chip-avatar svg {
@@ -230,4 +236,57 @@
   background: var(--md-sys-color-error-container);
   color: var(--md-sys-color-on-error-container);
   border-color: rgba(var(--md-sys-color-error-rgb), 0.26);
+}
+
+/* ===== DRAWER EDGE =====
+   Panels open over the conversation. Without a falloff, whatever sits beneath
+   (the Send button, a message) is cut by a hard vertical line. A wide, soft
+   shadow to the left reads as depth and lets the underlying content fade out. */
+.mat-drawer.mat-drawer-end {
+  box-shadow: -18px 0 48px -12px rgba(0, 0, 0, 0.55),
+              -2px 0 0 0 var(--md-sys-color-outline-variant);
+}
+
+@media (prefers-color-scheme: dark) {
+  .mat-drawer.mat-drawer-end {
+    box-shadow: -18px 0 56px -10px rgba(0, 0, 0, 0.78),
+                -2px 0 0 0 var(--md-sys-color-outline-variant);
+  }
+}
+
+/* ===== PANELS =====
+   Four of the five drawers use fixedInViewport (positioned against the viewport)
+   and the Documents drawer does not (positioned by its container), so they drifted
+   apart on resize. Pin all of them here instead: flush to the rail's left edge,
+   one width, one behaviour. */
+.mat-drawer.mat-drawer-end {
+  position: fixed;
+  top: var(--md-toolbar-height);
+  bottom: 0;
+  right: var(--md-nav-rail-width, 0px);
+  left: auto;
+  width: var(--fp-panel-width);
+  max-width: 100vw;
+  /* a step lighter than the page, so the panel reads as a surface above it */
+  background: var(--md-sys-color-surface-container-high);
+}
+
+/* MOBILE: the action lives at the bottom, so the panel arrives from the bottom.
+   A side sheet answering a bottom-bar tap contradicts where the touch happened. */
+@media (max-width: 599px) {
+  .mat-drawer.mat-drawer-end {
+    right: 0;
+    width: 100%;
+    bottom: var(--md-bottom-nav-height, 0px);
+    border-top-left-radius: var(--fp-radius-panel);
+    border-top-right-radius: var(--fp-radius-panel);
+  }
+
+  .mat-drawer.mat-drawer-end:not(.mat-drawer-opened) {
+    transform: translate3d(0, 100%, 0) !important;
+  }
+
+  .mat-drawer.mat-drawer-end.mat-drawer-opened {
+    transform: none !important;
+  }
 }

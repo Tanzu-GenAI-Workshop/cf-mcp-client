@@ -5,6 +5,8 @@
         <button
           type="button"
           class="bottom-nav-button"
+          [class.active]="(activePanel() ?? 'chat') === item.id"
+          [attr.aria-current]="(activePanel() ?? 'chat') === item.id ? 'page' : null"
           (click)="onNavItemClick(item.id)"
           [attr.aria-label]="item.tooltip"
           [attr.data-nav-item]="item.id">

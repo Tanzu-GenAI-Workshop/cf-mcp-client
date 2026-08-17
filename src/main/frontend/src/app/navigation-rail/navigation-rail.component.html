@@ -5,6 +5,8 @@
         <button
           type="button"
           class="nav-rail-button"
+          [class.active]="(activePanel() ?? 'chat') === item.id"
+          [attr.aria-current]="(activePanel() ?? 'chat') === item.id ? 'page' : null"
           (click)="onNavItemClick(item.id)"
           [matTooltip]="getTooltipText(item)"
           matTooltipPosition="left"

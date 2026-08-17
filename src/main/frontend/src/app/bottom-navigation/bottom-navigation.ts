@@ -2,6 +2,7 @@ import { Component, Input, inject } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { SidenavService } from '../../services/sidenav.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../services/auth.service';
 import { PlatformMetrics } from '../app.component';
 
@@ -28,6 +29,9 @@ export class BottomNavigationComponent {
   constructor(private sidenavService: SidenavService) {}
 
   // Bottom navigation items (same as navigation rail for consistency)
+  /** Which panel is open; null means the default Chat view. */
+  readonly activePanel = toSignal(inject(SidenavService).activePanel$, { initialValue: null });
+
   navigationItems = [
     {
       id: 'chat',

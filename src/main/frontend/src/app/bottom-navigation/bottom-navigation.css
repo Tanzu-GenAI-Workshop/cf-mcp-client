@@ -262,3 +262,77 @@
   width: 12px;
   height: 12px;
 }
+
+/* --- parity with the navigation rail --- */
+.bottom-nav-container {
+  gap: 0;
+  padding: 0;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+}
+
+.bottom-nav-button {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  /* square and edge to edge: no unhighlighted gutter between destinations */
+  border-radius: 0;
+  padding: var(--md-spacing-2) 2px;
+  gap: 6px;
+}
+
+.bottom-nav-button.active {
+  background: var(--md-sys-color-primary-container);
+}
+
+.bottom-nav-button.active .bottom-nav-icon,
+.bottom-nav-button.active .bottom-nav-label {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.bottom-nav-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+}
+
+.bottom-nav-icon svg { width: 32px; height: 32px; }
+
+.bottom-nav-label {
+  font-size: 0.95rem;
+  font-weight: 100;
+  line-height: 1.35;
+  overflow: visible;
+  text-overflow: clip;
+  padding-bottom: 2px;
+}
+
+.bottom-nav-state {
+  top: -7px;
+  right: -12px;
+  width: 16px;
+  height: 16px;
+}
+
+.bottom-nav-state svg { width: 16px; height: 16px; }
+
+/* align-items:center capped each button to its content height, leaving an
+   unhighlighted band above and below. Stretch so the button owns the full row. */
+.bottom-nav-container {
+  align-items: stretch;
+  padding: 0;
+}
+
+.bottom-nav-item {
+  align-items: stretch;
+}
+
+.bottom-nav-button {
+  height: 100%;
+  min-height: 0;
+}

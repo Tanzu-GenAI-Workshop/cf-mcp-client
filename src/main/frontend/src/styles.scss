@@ -49,6 +49,14 @@ b, strong { font-weight: 500; }
   }
 }
 
+/* When a panel is open, give back its width so the composer's Send button is
+   never hidden behind it. Mobile panels are full-width sheets, so no shift there. */
+@media (min-width: 600px) {
+  .app-container.panel-open .chatbox {
+    right: calc(var(--md-nav-rail-width, 0px) + var(--fp-panel-width, 380px));
+  }
+}
+
 /* Ensure chatbox area is never affected */
 .chatbox {
   position: fixed;

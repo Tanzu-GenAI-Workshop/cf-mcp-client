@@ -20,7 +20,7 @@ import { DomSanitizer } from '@angular/platform-browser';
  */
 const svg = (body: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" ` +
-  `stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+  `stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 
 export const FACEPLATE_ICONS: Record<string, string> = {
   // — navigation ————————————————————————————————————————————————

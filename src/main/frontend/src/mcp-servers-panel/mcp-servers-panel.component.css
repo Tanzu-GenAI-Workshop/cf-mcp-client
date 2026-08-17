@@ -23,12 +23,15 @@
 
 .sidenav-container {
   height: calc(100vh - var(--md-toolbar-height));
-  width: 100vw;
+  /* Stop at the rail's left edge. The rail sits at z-index 1000 above these
+     containers (999), so a drawer spanning the full viewport had its right
+     side painted over — which read as the panel's content being clipped. */
+  width: auto;
   position: fixed;
   top: var(--md-toolbar-height);
   left: 0;
   bottom: 0;
-  right: 0;
+  right: var(--md-nav-rail-width, 0px);
   pointer-events: none;
   z-index: 999;
   background-color: transparent;

@@ -13,6 +13,7 @@ import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 import { interval } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { SidenavService } from '../services/sidenav.service';
 import { startWith, switchMap, retry, shareReplay, catchError, of } from 'rxjs';
 
 @Component({
@@ -33,6 +34,9 @@ export class AppComponent {
 
   // Public readonly signal for document IDs
   readonly currentDocumentIds = this._currentDocumentIds.asReadonly();
+
+  /** Non-null while any side panel is open. */
+  readonly panelOpen = toSignal(inject(SidenavService).activePanel$, { initialValue: null });
 
   private readonly httpClient = inject(HttpClient);
   private readonly document = inject(DOCUMENT);
