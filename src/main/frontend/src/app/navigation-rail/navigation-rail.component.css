@@ -6,10 +6,8 @@
   bottom: 0;
   width: var(--md-nav-rail-width); /* Responsive width */
   z-index: 1000;
-  background: linear-gradient(to bottom,
-    var(--md-sys-color-surface-container, var(--mat-sys-surface-container)) 0%,
-    color-mix(in srgb, var(--md-sys-color-tertiary) 12%, var(--md-sys-color-surface-container, var(--mat-sys-surface-container)) 88%) 100%
-  );
+  background: var(--md-sys-color-surface-container, var(--mat-sys-surface-container));
+  border-left: 1px solid var(--md-sys-color-outline-variant);
   border-left: 1px solid var(--md-sys-color-outline-variant, var(--mat-sys-outline-variant));
   display: flex;
   flex-direction: column;
@@ -244,4 +242,87 @@
   .nav-rail-icon {
     transition: none;
   }
+}
+/* Faceplate: the glyph stays neutral so the rail reads calm; state is a small
+   shape-coded badge (circle / triangle / diamond) that survives greyscale. */
+.nav-rail-icon {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.nav-rail-button-content, .bottom-nav-button-content {
+  position: relative;
+}
+
+.nav-rail-state {
+  position: absolute;
+  top: -5px;
+  right: -9px;
+  width: 12px;
+  height: 12px;
+}
+
+.nav-rail-state svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ===== Faceplate: five destinations, so let them own the column =====
+   The items are distributed down the rail rather than stacked at the top,
+   filling roughly 55-70% of its height. At 32px the glyph is legible enough
+   to be recognised on its own, with the label confirming it. */
+.nav-rail-container {
+  justify-content: center;
+  gap: clamp(10px, 3vh, 34px);
+  padding: var(--md-spacing-4) 0;
+}
+
+.nav-rail-button {
+  width: 84px;
+  height: auto;
+  min-height: 84px;
+  padding: 12px 4px;
+  gap: 8px;
+  border-radius: 14px;
+}
+
+.nav-rail-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+}
+
+.nav-rail-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.nav-rail-label {
+  font-size: 0.75rem;
+  margin-top: 0;
+}
+
+/* the state badge scales with the glyph */
+.nav-rail-state {
+  top: -6px;
+  right: -12px;
+  width: 14px;
+  height: 14px;
+}
+
+.nav-rail-state svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* the active destination reads as a tinted pill, not just a colour shift */
+.nav-rail-button[aria-expanded="true"],
+.nav-rail-button.active {
+  background: var(--md-sys-color-primary-container);
+}
+
+.nav-rail-button[aria-expanded="true"] .nav-rail-icon,
+.nav-rail-button.active .nav-rail-icon,
+.nav-rail-button[aria-expanded="true"] .nav-rail-label,
+.nav-rail-button.active .nav-rail-label {
+  color: var(--md-sys-color-on-primary-container);
 }

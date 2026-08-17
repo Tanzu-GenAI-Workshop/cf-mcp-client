@@ -12,13 +12,15 @@
           [attr.data-nav-item]="item.id">
 
           <div class="nav-rail-button-content">
-            <!-- Main icon with status color -->
-            <mat-icon
-              class="nav-rail-icon"
-              [ngClass]="getStatusIndicator(item.id).show ? getStatusIndicator(item.id).color : ''"
-              [attr.aria-hidden]="true">
-              {{ item.icon }}
-            </mat-icon>
+            <!-- Neutral glyph; state rides as a small shape-coded badge -->
+            <mat-icon class="nav-rail-icon" [attr.aria-hidden]="true" [svgIcon]="item.icon"></mat-icon>
+            @if (getStatusIndicator(item.id).show) {
+              <mat-icon
+                class="nav-rail-state"
+                [ngClass]="getStatusIndicator(item.id).color"
+                [svgIcon]="getStatusIndicator(item.id).icon"
+                [attr.aria-hidden]="true"></mat-icon>
+            }
           </div>
 
           <!-- Label -->
@@ -38,7 +40,7 @@
         matTooltipPosition="left"
         aria-label="Sign out">
         <div class="nav-rail-button-content">
-          <mat-icon class="nav-rail-icon" aria-hidden="true">logout</mat-icon>
+          <mat-icon class="nav-rail-icon" aria-hidden="true" svgIcon="fp-logout"></mat-icon>
         </div>
         <span class="nav-rail-label">Sign out</span>
       </button>

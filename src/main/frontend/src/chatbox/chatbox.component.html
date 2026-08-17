@@ -5,7 +5,15 @@
   </div>
 
   <div #chatboxMessages class="chatbox-messages" role="log" aria-label="Chat messages">
-    <!-- Chat messages will be dynamically inserted here -->
+    @if (messages().length === 0) {
+      <div class="chat-empty">
+        <mat-icon class="chat-empty__mark" svgIcon="fp-chat" aria-hidden="true"></mat-icon>
+        <p class="chat-empty__title">{{ emptyStateModel() }}</p>
+        @if (emptyStateTools()) {
+          <p class="chat-empty__hint">{{ emptyStateTools() }}</p>
+        }
+      </div>
+    }
     @for (messageData of messagesWithReasoningFlags(); track messageData.index) {
       <div class="chat-message {{messageData.persona}}"
            role="article"
@@ -21,7 +29,7 @@
               <div class="bot-message-container">
                 @if (messageData.persona === 'agent' && !messageData.typing) {
                   <div class="agent-message-header">
-                    <mat-icon aria-hidden="true">smart_toy</mat-icon>
+                    <mat-icon aria-hidden="true" svgIcon="fp-agents"></mat-icon>
                     <span class="agent-name">{{messageData.agentName}}</span>
                   </div>
                 }
@@ -30,7 +38,7 @@
                     @if (messageData.persona === 'agent' && messageData.statusMessage) {
                       <!-- Agent status message during streaming -->
                       <div class="agent-status-message">
-                        <mat-icon class="status-icon" aria-hidden="true">sync</mat-icon>
+                        <mat-icon class="status-icon" aria-hidden="true" svgIcon="fp-stream"></mat-icon>
                         <span class="status-text">{{ messageData.statusMessage }}</span>
                       </div>
                     } @else {
@@ -53,7 +61,7 @@
                                        aria-label="Reasoning details">
                       <mat-expansion-panel-header>
                         <mat-panel-title>
-                          <mat-icon class="reasoning-icon" aria-hidden="true">psychology</mat-icon>
+                          <mat-icon class="reasoning-icon" aria-hidden="true" svgIcon="fp-reason"></mat-icon>
                           <span class="reasoning-title">Reasoning</span>
                         </mat-panel-title>
                       </mat-expansion-panel-header>
@@ -69,7 +77,7 @@
                                        aria-label="Error details">
                       <mat-expansion-panel-header>
                         <mat-panel-title>
-                          <mat-icon class="error-icon" aria-hidden="true">bug_report</mat-icon>
+                          <mat-icon class="error-icon" aria-hidden="true" svgIcon="fp-offline"></mat-icon>
                           <span class="error-title">Error Details</span>
                         </mat-panel-title>
                       </mat-expansion-panel-header>
@@ -103,44 +111,42 @@
               class="scroll-to-bottom-fab"
               (click)="scrollToBottomAndResume()"
               aria-label="Scroll to bottom">
-        <mat-icon>arrow_downward</mat-icon>
+        <mat-icon svgIcon="fp-down"></mat-icon>
       </button>
     }
   </div>
   <div class="chatbox-footer" role="form" aria-label="Send message">
     <ng-form class="chat-input-container">
-      <mat-form-field appearance="outline" class="chat-input-field">
-        <mat-label>Type your message</mat-label>
-        <textarea name="chatbox-input"
-                  matInput
-                  cdkTextareaAutosize
-                  cdkAutosizeMinRows="1"
-                  cdkAutosizeMaxRows="4"
-                  [ngModel]="chatMessage()"
-                  (ngModelChange)="updateChatMessage($event)"
-                  [disabled]="isBusy()"
-                  (keydown)="onEnterKeydown($event)"
-                  aria-label="Type your message"
-                  aria-describedby="chat-input-help"></textarea>
-        <mat-hint id="chat-input-help" align="start">
-          @if (isBusy()) {
-            Please wait for the current message to complete
-          } @else {
-            Press Enter to send, Shift+Enter for new line
-          }
-        </mat-hint>
-      </mat-form-field>
+      <textarea name="chatbox-input"
+                class="chat-input"
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="1"
+                cdkAutosizeMaxRows="6"
+                [ngModel]="chatMessage()"
+                (ngModelChange)="updateChatMessage($event)"
+                [disabled]="isBusy()"
+                (keydown)="onEnterKeydown($event)"
+                placeholder="Ask about your platform…"
+                aria-label="Ask about your platform"
+                aria-describedby="chat-input-help"></textarea>
 
-      <button mat-fab
+      <button mat-flat-button
               color="primary"
               type="button"
-              class="send-fab"
+              class="send-button"
               (click)="sendChatMessage()"
               [disabled]="!canSendMessage()"
-              [matTooltip]="sendButtonTooltip()"
               [attr.aria-label]="sendButtonTooltip()">
-        <mat-icon aria-hidden="true">send</mat-icon>
+        <mat-icon aria-hidden="true" [svgIcon]="isBusy() ? 'fp-stream' : 'fp-send'"></mat-icon>
+        {{ sendButtonText() }}
       </button>
     </ng-form>
+    <p class="chat-input-help" id="chat-input-help">
+      @if (isBusy()) {
+        Please wait for the current message to complete
+      } @else {
+        Press Enter to send, Shift+Enter for a new line
+      }
+    </p>
   </div>
 </div>

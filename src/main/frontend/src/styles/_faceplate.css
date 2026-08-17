@@ -1,0 +1,233 @@
+/**
+ * Faceplate — design system layer
+ *
+ * Two jobs:
+ *
+ * 1. BRIDGE. Angular Material is configured with `use-system-variables: true`
+ *    (custom-theme.scss), so its components read `--mat-sys-*`. Nothing in the
+ *    app ever defined those variables, so every Material component token was
+ *    resolving to nothing. Aliasing them onto the app's `--md-sys-color-*`
+ *    tokens makes Material's own components adopt the palette — and because
+ *    the aliases are var() references, dark mode follows for free.
+ *
+ * 2. GEOMETRY + WEIGHT. Pill, control and type rules that are design decisions
+ *    rather than colour: fully round pills, visible focus, light typefaces.
+ *
+ * Palette rationale lives in the Faceplate spec. Short version: three signal
+ * hues (viridian / amber / violet), chosen by simulating protanopia,
+ * deuteranopia and tritanopia. Nothing here is red, and colour is never the
+ * only channel — state is also a shape and a word.
+ */
+
+:root {
+  /* ===== BRIDGE: Material system variables → app colour tokens ===== */
+  --mat-sys-primary: var(--md-sys-color-primary);
+  --mat-sys-on-primary: var(--md-sys-color-on-primary);
+  --mat-sys-primary-container: var(--md-sys-color-primary-container);
+  --mat-sys-on-primary-container: var(--md-sys-color-on-primary-container);
+  --mat-sys-primary-rgb: var(--md-sys-color-primary-rgb);
+
+  --mat-sys-secondary: var(--md-sys-color-secondary);
+  --mat-sys-secondary-container: var(--md-sys-color-secondary-container);
+  --mat-sys-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --mat-sys-tertiary-container: var(--md-sys-color-tertiary-container);
+
+  --mat-sys-error: var(--md-sys-color-error);
+  --mat-sys-on-error: var(--md-sys-color-on-error);
+  --mat-sys-on-error-container: var(--md-sys-color-on-error-container);
+  --mat-sys-error-rgb: var(--md-sys-color-error-rgb);
+
+  --mat-sys-background: var(--md-sys-color-surface);
+  --mat-sys-on-background: var(--md-sys-color-on-surface);
+  --mat-sys-surface: var(--md-sys-color-surface);
+  --mat-sys-on-surface: var(--md-sys-color-on-surface);
+  --mat-sys-surface-variant: var(--md-sys-color-surface-variant);
+  --mat-sys-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --mat-sys-surface-container: var(--md-sys-color-surface-container);
+  --mat-sys-surface-container-low: var(--md-sys-color-surface-container-low);
+  --mat-sys-surface-container-high: var(--md-sys-color-surface-container-high);
+  --mat-sys-surface-container-highest: var(--md-sys-color-surface-container-highest);
+
+  --mat-sys-outline: var(--md-sys-color-outline);
+  --mat-sys-outline-variant: var(--md-sys-color-outline-variant);
+
+  --mat-sys-inverse-surface: var(--md-sys-color-inverse-surface);
+  --mat-sys-inverse-on-surface: var(--md-sys-color-inverse-on-surface);
+  --mat-sys-inverse-primary: var(--md-sys-color-inverse-primary);
+
+  /* ===== BRIDGE: Material typescale =====
+     Roboto is loaded at 300/400/500 only (index.html), so the scale uses
+     exactly those three — no synthetic weights, nothing above 500. */
+  --mat-sys-typescale-body-large-size: 1rem;
+  --mat-sys-typescale-body-large-line-height: 1.5rem;
+  --mat-sys-typescale-body-large-weight: 400;
+
+  --mat-sys-typescale-body-medium-size: 0.875rem;
+  --mat-sys-typescale-body-medium-line-height: 1.25rem;
+  --mat-sys-typescale-body-medium-tracking: 0.016em;
+  --mat-sys-typescale-body-medium-weight: 400;
+
+  --mat-sys-typescale-title-medium-size: 1rem;
+  --mat-sys-typescale-title-medium-line-height: 1.5rem;
+  --mat-sys-typescale-title-medium-weight: 400;
+
+  --mat-sys-typescale-headline-small-size: 1.5rem;
+  --mat-sys-typescale-headline-small-line-height: 2rem;
+  --mat-sys-typescale-headline-small-tracking: 0;
+  --mat-sys-typescale-headline-small-weight: 300;
+
+  /* ===== Faceplate geometry ===== */
+  --fp-radius-pill: 999px;
+  --fp-radius-panel: 10px;
+  --fp-radius-control: 8px;
+  --fp-target-min: 44px;
+}
+
+/* Faceplate glyphs are stroke-drawn, so the default fill would flood them.
+   The dots inside (chat cadence, embedding points) opt back in explicitly. */
+.mat-icon svg { fill: none; }
+.mat-icon svg [fill="currentColor"] { fill: currentColor; }
+
+/* ===== PILLS =====
+   Status is icon + label + tint, in that order of importance. The tint is a
+   surface; the ink and the glyph carry the meaning. */
+.mat-mdc-chip.mat-mdc-standard-chip {
+  --mdc-chip-container-shape-radius: var(--fp-radius-pill);
+  --mdc-chip-container-height: 28px;
+  border-radius: var(--fp-radius-pill);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container);
+  font-weight: 400;
+}
+
+/* Avatars default to 24px, which will not fit a 28px pill. Match the 15px
+   glyph the standalone .fp-pill uses so both devices look like one system. */
+.mat-mdc-chip.mat-mdc-standard-chip .mat-mdc-chip-avatar,
+.mat-mdc-chip.mat-mdc-standard-chip .mat-mdc-chip-graphic {
+  width: 15px;
+  height: 15px;
+  font-size: 15px;
+  flex: none;
+}
+
+.mat-mdc-chip.mat-mdc-standard-chip .mat-mdc-chip-avatar svg {
+  width: 15px;
+  height: 15px;
+}
+
+.mat-mdc-chip.mat-mdc-standard-chip .mat-mdc-chip-action-label {
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+}
+
+/* Status pills inherit the three signal hues. Each one is paired with a
+   distinct glyph in the template, so the colour is redundant by design. */
+.mat-mdc-chip.status-success {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: rgba(var(--md-sys-color-primary-rgb), 0.26);
+}
+.mat-mdc-chip.status-warning {
+  background: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-on-warning-container);
+  border-color: rgba(var(--md-sys-color-warning-rgb), 0.26);
+}
+.mat-mdc-chip.status-error {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-color: rgba(var(--md-sys-color-error-rgb), 0.26);
+}
+.mat-mdc-chip.status-success .mat-mdc-chip-action-label,
+.mat-mdc-chip.status-warning .mat-mdc-chip-action-label,
+.mat-mdc-chip.status-error .mat-mdc-chip-action-label { color: inherit; }
+
+/* Protocol pills are machine strings — give them the utility face. */
+.mat-mdc-chip.protocol-sse,
+.mat-mdc-chip.protocol-streamable {
+  font-family: var(--fp-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace);
+  font-weight: 400;
+}
+
+/* ===== CONTROLS =====
+   Obvious means labelled and reachable: a real hit target and a focus ring
+   that is never removed. */
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-button {
+  --mdc-filled-button-container-shape: var(--fp-radius-control);
+  --mdc-outlined-button-container-shape: var(--fp-radius-control);
+  --mdc-text-button-container-shape: var(--fp-radius-control);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+
+.mat-mdc-icon-button {
+  min-width: var(--fp-target-min);
+  min-height: var(--fp-target-min);
+}
+
+:where(button, a, summary, [tabindex], .mat-mdc-chip):focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* ===== CONTAINERS =====
+   Depth from a hairline and a tinted ground, not from shadow — which keeps
+   the interface flat enough to stay legible at high contrast. */
+.mat-mdc-card {
+  --mdc-elevated-card-container-shape: var(--fp-radius-panel);
+  --mdc-outlined-card-container-shape: var(--fp-radius-panel);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  box-shadow: none;
+}
+
+.mat-mdc-dialog-surface {
+  border-radius: var(--fp-radius-panel);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* ===== PILL (standalone) =====
+   The same device as the Material chip, for places that aren't chips.
+   Icon then label, always: colour is the third channel. */
+.fp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 11px 4px 9px;
+  border-radius: var(--fp-radius-pill);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.fp-pill mat-icon,
+.fp-pill .mat-icon {
+  width: 15px;
+  height: 15px;
+  font-size: 15px;
+  flex: none;
+}
+
+.fp-pill--mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-size: 0.75rem; }
+
+.fp-pill--ready {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: rgba(var(--md-sys-color-primary-rgb), 0.26);
+}
+.fp-pill--attention {
+  background: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-on-warning-container);
+  border-color: rgba(var(--md-sys-color-warning-rgb), 0.26);
+}
+.fp-pill--offline {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-color: rgba(var(--md-sys-color-error-rgb), 0.26);
+}

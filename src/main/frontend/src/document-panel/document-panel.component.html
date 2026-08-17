@@ -4,7 +4,7 @@
     <div class="sidenav-header">
       <h2 id="documents-panel-heading">Documents</h2>
       <button mat-icon-button (click)="toggleSidenav()" aria-label="Close documents panel">
-        <mat-icon aria-hidden="true">close</mat-icon>
+        <mat-icon aria-hidden="true" svgIcon="fp-close"></mat-icon>
       </button>
     </div>
 
@@ -21,7 +21,7 @@
               [class.status-error]="metrics.vectorStoreName === ''"
               role="status"
               [attr.aria-label]="'Vector store status: ' + (metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not available')">
-              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.vectorStoreName !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              <mat-icon matChipAvatar aria-hidden="true" [svgIcon]="metrics.vectorStoreName !== '' ? 'fp-ready' : 'fp-offline'"></mat-icon>
               {{ metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not Available' }}
             </mat-chip>
           </mat-chip-set>
@@ -35,7 +35,7 @@
               [class.status-error]="metrics.embeddingModel === ''"
               role="status"
               [attr.aria-label]="'Embedding model status: ' + (metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not available')">
-              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.embeddingModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              <mat-icon matChipAvatar aria-hidden="true" [svgIcon]="metrics.embeddingModel !== '' ? 'fp-ready' : 'fp-offline'"></mat-icon>
               {{ metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not Available' }}
             </mat-chip>
           </mat-chip-set>
@@ -63,7 +63,7 @@
 
           <!-- Drop Zone Content -->
           <div class="drop-zone-content">
-            <mat-icon class="drop-zone-icon" aria-hidden="true">{{ isDragOver() ? 'file_download' : (isManualMode() ? 'block' : 'cloud_upload') }}</mat-icon>
+            <mat-icon class="drop-zone-icon" aria-hidden="true" [svgIcon]="isDragOver() ? 'fp-down' : (isManualMode() ? 'fp-offline' : 'fp-attach')"></mat-icon>
 
             <div class="drop-zone-text">
               @if (isManualMode()) {
@@ -93,14 +93,14 @@
                     [disabled]="isUploading() || metrics.vectorStoreName === '' || metrics.embeddingModel === '' || isManualMode()"
                     class="browse-button"
                     aria-label="Browse for PDF files">
-              <mat-icon aria-hidden="true">folder_open</mat-icon>
+              <mat-icon aria-hidden="true" svgIcon="fp-docs"></mat-icon>
               Browse Files
             </button>
           </div>
 
           <!-- Supported formats info -->
           <div class="supported-formats" aria-label="Supported file formats">
-            <mat-icon class="format-icon" aria-hidden="true">picture_as_pdf</mat-icon>
+            <mat-icon class="format-icon" aria-hidden="true" svgIcon="fp-docs"></mat-icon>
             <span>PDF files only • Max 50MB</span>
           </div>
         </div>
@@ -109,7 +109,7 @@
         @if (isUploading()) {
           <div class="upload-progress-container" role="status" aria-live="polite" aria-label="File upload progress">
             <div class="upload-progress-header">
-              <mat-icon class="upload-icon" aria-hidden="true">{{ isProcessing() ? 'settings' : getFileTypeIcon(currentFileName()) }}</mat-icon>
+              <mat-icon class="upload-icon" aria-hidden="true" [svgIcon]="isProcessing() ? 'fp-tool' : getFileTypeIcon(currentFileName())"></mat-icon>
               <div class="upload-info">
                 <div class="file-name">{{ currentFileName() }}</div>
                 <div class="upload-status">{{ isProcessing() ? 'Processing document...' : 'Uploading...' }}</div>
@@ -137,7 +137,7 @@
                       (click)="selectedDocumentId.set(null)"
                       matTooltip="Clear selection"
                       aria-label="Clear document selection">
-                <mat-icon aria-hidden="true">close</mat-icon>
+                <mat-icon aria-hidden="true" svgIcon="fp-close"></mat-icon>
               </button>
             </div>
           }
@@ -145,7 +145,7 @@
 
         @if (documents.length === 0) {
           <div class="empty-state" role="status" aria-label="No documents uploaded">
-            <mat-icon class="empty-state-icon" aria-hidden="true">folder_open</mat-icon>
+            <mat-icon class="empty-state-icon" aria-hidden="true" svgIcon="fp-docs"></mat-icon>
             <div class="empty-state-text">No documents uploaded yet</div>
             <div class="empty-state-subtitle">Upload your first PDF to get started</div>
           </div>
@@ -173,9 +173,7 @@
               <!-- Leading icon -->
               <mat-icon matListItemIcon
                         aria-hidden="true"
-                        [class.selected-icon]="isDocumentSelected(doc.id)">
-                {{ getFileTypeIcon(doc.name) }}
-              </mat-icon>
+                        [class.selected-icon]="isDocumentSelected(doc.id)" [svgIcon]="getFileTypeIcon(doc.name)"></mat-icon>
 
               <!-- Two-line content layout following Material Design standards -->
               <div matListItemTitle class="document-title-container">
@@ -186,7 +184,7 @@
                         matTooltip="Delete document"
                         class="delete-button"
                         [attr.aria-label]="'Delete document: ' + doc.name">
-                  <mat-icon aria-hidden="true">delete</mat-icon>
+                  <mat-icon aria-hidden="true" svgIcon="fp-trash"></mat-icon>
                 </button>
               </div>
               <div matListItemLine class="document-subtitle">
@@ -199,7 +197,7 @@
                 <div class="swipe-delete-indicator"
                      role="status"
                      aria-label="Swipe to delete">
-                  <mat-icon aria-hidden="true">delete</mat-icon>
+                  <mat-icon aria-hidden="true" svgIcon="fp-trash"></mat-icon>
                   <span>Release to delete</span>
                 </div>
               }
@@ -213,7 +211,7 @@
     @if (documents.length > 0) {
       <div class="clear-files-container">
         <button mat-raised-button color="warn" (click)="deleteAllDocuments()" aria-label="Delete all uploaded documents">
-          <mat-icon aria-hidden="true">delete_sweep</mat-icon> Clear All Files
+          <mat-icon aria-hidden="true" svgIcon="fp-trash"></mat-icon> Clear All Files
         </button>
       </div>
     }
@@ -227,7 +225,7 @@
         class="advanced-expansion-panel">
         <mat-expansion-panel-header>
           <mat-panel-title id="advanced-options-heading">
-            <mat-icon class="advanced-icon" aria-hidden="true">settings</mat-icon>
+            <mat-icon class="advanced-icon" aria-hidden="true" svgIcon="fp-tool"></mat-icon>
             Advanced Options
           </mat-panel-title>
         </mat-expansion-panel-header>
@@ -235,7 +233,7 @@
         <div class="advanced-content">
           <!-- Info about manual mode -->
           <div class="advanced-info" role="status" aria-live="polite">
-            <mat-icon class="info-icon" aria-hidden="true">info</mat-icon>
+            <mat-icon class="info-icon" aria-hidden="true" svgIcon="fp-info"></mat-icon>
             <p class="info-text">
               For advanced users: Enter a document ID directly to bypass file uploads.
               @if (documents.length > 0) {
@@ -258,12 +256,12 @@
             <mat-hint id="manual-id-hint">
               @if (documents.length > 0) {
                 <span class="disabled-hint">
-                  <mat-icon class="hint-icon" aria-hidden="true">block</mat-icon>
+                  <mat-icon class="hint-icon" aria-hidden="true" svgIcon="fp-offline"></mat-icon>
                   Disabled - Delete uploaded files to enable
                 </span>
               } @else if (isManualMode()) {
                 <span class="active-hint">
-                  <mat-icon class="hint-icon" aria-hidden="true">check_circle</mat-icon>
+                  <mat-icon class="hint-icon" aria-hidden="true" svgIcon="fp-ready"></mat-icon>
                   Active - File uploads disabled
                 </span>
               } @else {
@@ -275,7 +273,7 @@
           <!-- Warning when manual mode is active -->
           @if (isManualMode()) {
             <div class="manual-mode-warning" role="alert" aria-live="assertive">
-              <mat-icon class="warning-icon" aria-hidden="true">warning</mat-icon>
+              <mat-icon class="warning-icon" aria-hidden="true" svgIcon="fp-attention"></mat-icon>
               <div class="warning-content">
                 <div class="warning-title">Manual Mode Active</div>
                 <div class="warning-text">

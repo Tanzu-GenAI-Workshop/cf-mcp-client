@@ -1,6 +1,6 @@
 <div class="mcp-servers-container">
-  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="MCP Servers" matTooltipPosition="left">
-    <mat-icon>api</mat-icon>
+  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="MCP Servers" matTooltipPosition="left" aria-label="MCP servers">
+    <mat-icon svgIcon="fp-mcp"></mat-icon>
   </button>
 </div>
 
@@ -9,7 +9,7 @@
     <div class="sidenav-header">
       <h2 id="mcp-servers-panel-heading">MCP Servers</h2>
       <button mat-icon-button (click)="sidenav.close()" aria-label="Close MCP servers panel">
-        <mat-icon aria-hidden="true">close</mat-icon>
+        <mat-icon aria-hidden="true" svgIcon="fp-close"></mat-icon>
       </button>
     </div>
 
@@ -26,7 +26,7 @@
               [class.status-error]="getOverallStatusClass() === 'status-red'"
               role="status"
               [attr.aria-label]="'MCP servers status: ' + getOverallStatusText()">
-              <mat-icon matChipAvatar aria-hidden="true">{{ getOverallStatusIcon() }}</mat-icon>
+              <mat-icon matChipAvatar aria-hidden="true" [svgIcon]="getOverallStatusIcon()"></mat-icon>
               {{ getOverallStatusText() }}
             </mat-chip>
           </mat-chip-set>
@@ -54,7 +54,7 @@
                             [matTooltip]="mcpServer.healthy ? 'Click to view tools' : 'MCP Server is unhealthy'"
                             matTooltipPosition="right"
                             [attr.aria-label]="mcpServer.healthy ? 'View tools for ' + (mcpServer.serverName || mcpServer.name) : 'Server ' + (mcpServer.serverName || mcpServer.name) + ' is unhealthy'">
-                      <mat-icon aria-hidden="true">{{ mcpServer.healthy ? 'info' : 'close' }}</mat-icon>
+                      <mat-icon aria-hidden="true" [svgIcon]="mcpServer.healthy ? 'fp-info' : 'fp-close'"></mat-icon>
                     </button>
                     <div class="server-info">
                       <div class="server-name">
@@ -62,10 +62,10 @@
                       </div>
                       <div class="server-tools" role="status">
                         @if (mcpServer.healthy) {
-                          <mat-icon class="tools-icon" aria-hidden="true">build</mat-icon>
+                          <mat-icon class="tools-icon" aria-hidden="true" svgIcon="fp-tool"></mat-icon>
                           {{ mcpServer.tools.length }} {{ mcpServer.tools.length === 1 ? 'tool' : 'tools' }} available
                         } @else {
-                          <mat-icon class="tools-icon status-red" aria-hidden="true">error_outline</mat-icon>
+                          <mat-icon class="tools-icon status-red" aria-hidden="true" svgIcon="fp-offline"></mat-icon>
                           Unhealthy
                         }
                       </div>
@@ -90,7 +90,7 @@
 
     @if (sortedMcpServers.length === 0) {
       <div class="empty-state" role="status" aria-label="No MCP servers configured">
-        <mat-icon class="empty-icon" aria-hidden="true">cloud_off</mat-icon>
+        <mat-icon class="empty-icon" aria-hidden="true" svgIcon="fp-offline"></mat-icon>
         <p>No MCP servers configured</p>
       </div>
     }

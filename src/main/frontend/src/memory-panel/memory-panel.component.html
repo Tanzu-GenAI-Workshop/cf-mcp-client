@@ -1,6 +1,6 @@
 <div class="memory-container">
-  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="Memory" matTooltipPosition="left">
-    <mat-icon>memory</mat-icon>
+  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="Memory" matTooltipPosition="left" aria-label="Conversation memory">
+    <mat-icon svgIcon="fp-memory"></mat-icon>
   </button>
 </div>
 
@@ -9,7 +9,7 @@
     <div class="sidenav-header">
       <h2 id="memory-panel-heading">Memory</h2>
       <button mat-icon-button (click)="sidenav.close()" aria-label="Close memory panel">
-        <mat-icon aria-hidden="true">close</mat-icon>
+        <mat-icon aria-hidden="true" svgIcon="fp-close"></mat-icon>
       </button>
     </div>
 
@@ -25,7 +25,7 @@
               [class.status-error]="metrics.vectorStoreName === ''"
               role="status"
               [attr.aria-label]="'Vector store status: ' + (metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not available')">
-              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.vectorStoreName !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              <mat-icon matChipAvatar aria-hidden="true" [svgIcon]="metrics.vectorStoreName !== '' ? 'fp-ready' : 'fp-offline'"></mat-icon>
               {{ metrics.vectorStoreName !== '' ? metrics.vectorStoreName : 'Not Available' }}
             </mat-chip>
           </mat-chip-set>
@@ -39,7 +39,7 @@
               [class.status-error]="metrics.embeddingModel === ''"
               role="status"
               [attr.aria-label]="'Embedding model status: ' + (metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not available')">
-              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.embeddingModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              <mat-icon matChipAvatar aria-hidden="true" [svgIcon]="metrics.embeddingModel !== '' ? 'fp-ready' : 'fp-offline'"></mat-icon>
               {{ metrics.embeddingModel !== '' ? metrics.embeddingModel : 'Not Available' }}
             </mat-chip>
           </mat-chip-set>
@@ -70,7 +70,7 @@
               [attr.aria-label]="'Memory type: ' + getMemoryTypeText() + '. ' + getMemoryTooltip()"
               [matTooltip]="getMemoryTooltip()"
               matTooltipPosition="left">
-              <mat-icon matChipAvatar aria-hidden="true">{{ getMemoryIcon() }}</mat-icon>
+              <mat-icon matChipAvatar aria-hidden="true" [svgIcon]="getMemoryIcon()"></mat-icon>
               {{ getMemoryTypeText() }}
             </mat-chip>
           </mat-chip-set>

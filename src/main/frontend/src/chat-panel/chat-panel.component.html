@@ -1,6 +1,6 @@
 <div class="chat-container">
-  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="Chat" matTooltipPosition="left">
-    <mat-icon>chat</mat-icon>
+  <button mat-icon-button class="toggle-button" (click)="toggleSidenav()" matTooltip="Chat" matTooltipPosition="left" aria-label="Chat model status">
+    <mat-icon svgIcon="fp-chat"></mat-icon>
   </button>
 </div>
 
@@ -9,7 +9,7 @@
     <div class="sidenav-header">
       <h2 id="chat-panel-heading">Chat</h2>
       <button mat-icon-button (click)="sidenav.close()" aria-label="Close chat panel">
-        <mat-icon aria-hidden="true">close</mat-icon>
+        <mat-icon aria-hidden="true" svgIcon="fp-close"></mat-icon>
       </button>
     </div>
 
@@ -25,7 +25,7 @@
               [class.status-error]="metrics.chatModel === ''"
               role="status"
               [attr.aria-label]="'Chat model status: ' + (metrics.chatModel !== '' ? metrics.chatModel : 'Not available')">
-              <mat-icon matChipAvatar aria-hidden="true">{{ metrics.chatModel !== '' ? 'check_circle' : 'error' }}</mat-icon>
+              <mat-icon matChipAvatar aria-hidden="true" [svgIcon]="metrics.chatModel !== '' ? 'fp-ready' : 'fp-offline'"></mat-icon>
               {{ metrics.chatModel !== '' ? metrics.chatModel : 'Not Available' }}
             </mat-chip>
           </mat-chip-set>

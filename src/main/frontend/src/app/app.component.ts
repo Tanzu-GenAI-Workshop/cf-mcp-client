@@ -1,5 +1,6 @@
 import { Component, inject, signal, effect, ViewChild } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
@@ -17,7 +18,7 @@ import { startWith, switchMap, retry, shareReplay, catchError, of } from 'rxjs';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, AgentsPanel, ChatboxComponent, NavigationRailComponent, BottomNavigationComponent],
+  imports: [MatToolbar, MatIconModule, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, AgentsPanel, ChatboxComponent, NavigationRailComponent, BottomNavigationComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

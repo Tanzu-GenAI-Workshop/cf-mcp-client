@@ -14,17 +14,14 @@ import {
 } from '@angular/core';
 import {DOCUMENT} from '@angular/common';
 import {HttpParams, HttpClient} from '@angular/common/http';
-import {MatFabButton, MatMiniFabButton} from '@angular/material/button';
+import {MatButton, MatMiniFabButton} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
-import {MatFormField} from '@angular/material/form-field';
-import {MatInput, MatInputModule} from '@angular/material/input';
 import {TextFieldModule} from '@angular/cdk/text-field';
 import {MatCard, MatCardContent} from '@angular/material/card';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDialog} from '@angular/material/dialog';
 import {MarkdownComponent} from 'ngx-markdown';
 import {PlatformMetrics} from '../app/app.component';
-import {MatTooltip} from '@angular/material/tooltip';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ThinkTagParser} from './think-tag-parser';
 import {A2AAgent} from '../app/app.component';
@@ -68,7 +65,7 @@ interface StatusUpdate {
 @Component({
   selector: 'app-chatbox',
   standalone: true,
-  imports: [FormsModule, MatFormField, MatInput, MatCard, MatCardContent, MarkdownComponent, MatInputModule, MatIconModule, MatFabButton, MatMiniFabButton, TextFieldModule, MatTooltip, MatExpansionModule],
+  imports: [FormsModule, MatCard, MatCardContent, MarkdownComponent, MatIconModule, MatButton, MatMiniFabButton, TextFieldModule, MatExpansionModule],
   templateUrl: './chatbox.component.html',
   styleUrl: './chatbox.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -134,6 +131,22 @@ export class ChatboxComponent implements OnDestroy, AfterViewInit {
     if (this._isConnecting()) return 'Connecting...';
     if (this._isStreaming()) return 'Streaming...';
     return 'Send';
+  });
+
+  /** The model is the headline of the empty state — it is what you are talking to. */
+  readonly emptyStateModel = computed(() => {
+    const m = this._metricsInput();
+    return m.chatModel || 'No chat model bound';
+  });
+
+  /** What that model can reach, when it can reach anything. */
+  readonly emptyStateTools = computed(() => {
+    const m = this._metricsInput();
+    if (!m.chatModel) return 'Bind a GenAI service to start a conversation';
+    const healthy = (m.mcpServers ?? []).filter(s => s.healthy);
+    const tools = healthy.reduce((n, s) => n + (s.tools?.length ?? 0), 0);
+    if (tools === 0) return '';
+    return `${tools} tools from ${healthy.length} MCP server${healthy.length === 1 ? '' : 's'}`;
   });
 
   readonly sendButtonTooltip = computed(() => {

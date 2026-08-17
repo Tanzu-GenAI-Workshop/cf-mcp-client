@@ -1,4 +1,4 @@
-import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { BehaviorSubject } from 'rxjs';
 
@@ -7,13 +7,8 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class SidenavService {
   private sidenavs: { [key: string]: MatSidenav } = {};
-  private renderer: Renderer2;
   private readonly activePanelSubject = new BehaviorSubject<string | null>(null);
   public readonly activePanel$ = this.activePanelSubject.asObservable();
-
-  constructor(private rendererFactory: RendererFactory2) {
-    this.renderer = this.rendererFactory.createRenderer(null, null);
-  }
 
   registerSidenav(id: string, sidenav: MatSidenav): void {
     this.sidenavs[id] = sidenav;
@@ -27,23 +22,18 @@ export class SidenavService {
       return;
     }
 
-    // Apply shared axis transition for panel switching
-    if (currentActivePanel) {
-      this.applySharedAxisTransition(currentActivePanel, id);
-    }
-
-    // Close all other sidenavs with exit animation
+    // Close all other sidenavs
     Object.entries(this.sidenavs).forEach(([sidenavId, sidenav]) => {
       if (sidenavId !== id && sidenav.opened) {
-        this.applySidenavExitAnimation(sidenav);
         sidenav.close();
       }
     });
 
-    // Open the requested sidenav with entrance animation
+    // Open the requested sidenav. MatSidenav animates its own slide via a
+    // 400ms transform transition; adding a competing CSS animation here
+    // overrides that transition and makes the panels jump mid-slide.
     const sidenav = this.sidenavs[id];
     if (sidenav && !sidenav.opened) {
-      this.applySidenavEnterAnimation(sidenav);
       sidenav.open();
       this.activePanelSubject.next(id);
     }
@@ -52,7 +42,6 @@ export class SidenavService {
   close(id: string): void {
     const sidenav = this.sidenavs[id];
     if (sidenav && sidenav.opened) {
-      this.applySidenavExitAnimation(sidenav);
       sidenav.close();
       this.activePanelSubject.next(null);
     }
@@ -67,57 +56,6 @@ export class SidenavService {
     } else {
       this.open(id);
     }
-  }
-
-  /**
-   * Apply Material Design container transform entrance animation
-   */
-  private applySidenavEnterAnimation(sidenav: MatSidenav): void {
-    // Use element ID to find the sidenav element in DOM since _elementRef is private
-    const element = document.querySelector(`mat-sidenav[data-panel-id]`) as HTMLElement;
-    if (element) {
-      this.renderer.addClass(element, 'md-panel-enter');
-
-      // Remove the class after animation completes
-      setTimeout(() => {
-        this.renderer.removeClass(element, 'md-panel-enter');
-      }, 450); // Duration matches --md-sys-motion-duration-long1
-    }
-  }
-
-  /**
-   * Apply Material Design container transform exit animation
-   */
-  private applySidenavExitAnimation(sidenav: MatSidenav): void {
-    // Use element ID to find the sidenav element in DOM since _elementRef is private
-    const element = document.querySelector(`mat-sidenav[data-panel-id]`) as HTMLElement;
-    if (element) {
-      this.renderer.addClass(element, 'md-panel-exit');
-
-      // Remove the class after animation completes
-      setTimeout(() => {
-        this.renderer.removeClass(element, 'md-panel-exit');
-      }, 250); // Duration matches --md-sys-motion-duration-medium
-    }
-  }
-
-  /**
-   * Apply Material Design shared axis transition between panels
-   * For now, this is implemented through CSS classes applied to all sidenav elements
-   */
-  private applySharedAxisTransition(fromPanelId: string, toPanelId: string): void {
-    // Apply shared axis transition using CSS classes
-    const sidenavElements = document.querySelectorAll('mat-sidenav');
-    sidenavElements.forEach(element => {
-      this.renderer.addClass(element, 'md-navigation-transition');
-    });
-
-    // Clean up classes after transition
-    setTimeout(() => {
-      sidenavElements.forEach(element => {
-        this.renderer.removeClass(element, 'md-navigation-transition');
-      });
-    }, 250); // Duration matches --md-sys-motion-duration-medium
   }
 
   /**

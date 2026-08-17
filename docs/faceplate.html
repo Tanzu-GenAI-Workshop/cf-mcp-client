@@ -1,0 +1,817 @@
+<title>Tanzu Chat Faceplate</title>
+<style>
+  /* ============================================================
+     TOKENS — light is the base; dark redefines tokens only.
+     Every colour below is measured: see the Colour section.
+     ============================================================ */
+  :root {
+    /* neutrals, biased green-cyan toward the accent */
+    --paper:      #F5F8F6;
+    --surface:    #FFFFFF;
+    --sunken:     #EAF0EC;
+    --line:       #D7E0DA;
+    --line-soft:  #E6ECE8;
+    --ink:        #121A17;
+    --ink-2:      #47524C;
+    --ink-3:      #69736D;
+
+    /* signal hues — three, no more */
+    --ready:      #0B6B57;
+    --ready-tint: #D7EDE5;
+    --attn:       #7A4A05;
+    --attn-tint:  #F8E7C8;
+    --offline:    #5A32A3;
+    --offline-tint:#E7E0FA;
+
+    --accent:     var(--ready);
+    --accent-ink: #FFFFFF;
+
+    /* geometry */
+    --r-pill: 999px;
+    --r-panel: 10px;
+    --r-control: 8px;
+    --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+    --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 72px;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0D1311;
+      --surface:    #141C19;
+      --sunken:     #101715;
+      --line:       #27322D;
+      --line-soft:  #1C2521;
+      --ink:        #E7EEEA;
+      --ink-2:      #A7B4AD;
+      --ink-3:      #7C8983;
+
+      --ready:      #5EC9A8;
+      --ready-tint: #12332B;
+      --attn:       #E0A64B;
+      --attn-tint:  #33280F;
+      --offline:    #B39CF5;
+      --offline-tint:#241E3D;
+
+      --accent:     var(--ready);
+      --accent-ink: #0D1311;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #0D1311;
+    --surface:    #141C19;
+    --sunken:     #101715;
+    --line:       #27322D;
+    --line-soft:  #1C2521;
+    --ink:        #E7EEEA;
+    --ink-2:      #A7B4AD;
+    --ink-3:      #7C8983;
+
+    --ready:      #5EC9A8;
+    --ready-tint: #12332B;
+    --attn:       #E0A64B;
+    --attn-tint:  #33280F;
+    --offline:    #B39CF5;
+    --offline-tint:#241E3D;
+
+    --accent:     var(--ready);
+    --accent-ink: #0D1311;
+  }
+
+  /* ============================================================
+     BASE
+     ============================================================ */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1060px; margin: 0 auto; padding: var(--s-8) var(--s-5) var(--s-8); }
+  @media (max-width: 700px) { .page { padding: var(--s-6) var(--s-4); } }
+
+  h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 350; letter-spacing: -0.015em; }
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.1; font-weight: 300; letter-spacing: -0.025em; }
+  h2 { font-size: clamp(1.35rem, 3vw, 1.7rem); line-height: 1.2; }
+  h3 { font-size: 1.02rem; letter-spacing: 0; font-weight: 450; }
+  p  { margin: 0; }
+  b, strong { font-weight: 500; }
+  a  { color: var(--accent); text-underline-offset: 3px; }
+
+  :where(a, button, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--s-1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* the structural signature: a mono tick-label on a hairline */
+  .eyebrow {
+    display: flex; align-items: center; gap: var(--s-3);
+    font-family: var(--mono); font-size: 0.7rem; font-weight: 450;
+    text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-2);
+    margin-bottom: var(--s-4);
+  }
+  .eyebrow::before { content: ""; width: 10px; height: 10px; border-left: 1px solid var(--ink-3); border-bottom: 1px solid var(--ink-3); flex: none; }
+  .eyebrow::after  { content: ""; height: 1px; background: var(--line); flex: 1; }
+
+  section { margin-top: var(--s-8); }
+  .lede { color: var(--ink-2); max-width: 64ch; font-size: 1.05rem; }
+  .note { color: var(--ink-3); font-size: 0.875rem; max-width: 68ch; }
+  .stack { display: flex; flex-direction: column; gap: var(--s-4); }
+  .panel {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-panel); padding: var(--s-5);
+  }
+  .scroll-x { overflow-x: auto; }
+
+  /* ============================================================
+     PILLS — the core labelling device.
+     Icon + text always; colour is the third channel, never the first.
+     ============================================================ */
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 11px 4px 9px; min-height: 28px;
+    border-radius: var(--r-pill); border: 1px solid transparent;
+    font-size: 0.8125rem; font-weight: 450; line-height: 1; white-space: nowrap;
+  }
+  .pill svg { width: 15px; height: 15px; flex: none; }
+  .pill--ready   { background: var(--ready-tint);   color: var(--ready);   border-color: color-mix(in srgb, var(--ready) 26%, transparent); }
+  .pill--attn    { background: var(--attn-tint);    color: var(--attn);    border-color: color-mix(in srgb, var(--attn) 26%, transparent); }
+  .pill--offline { background: var(--offline-tint); color: var(--offline); border-color: color-mix(in srgb, var(--offline) 26%, transparent); }
+  .pill--quiet   { background: var(--sunken); color: var(--ink-2); border-color: var(--line); }
+  .pill--mono    { font-family: var(--mono); font-size: 0.75rem; font-weight: 400; letter-spacing: 0.01em; }
+
+  /* ============================================================
+     CONTROLS — obvious, labelled, ≥44px hit area
+     ============================================================ */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+    min-height: 44px; padding: 0 var(--s-5);
+    border-radius: var(--r-control); border: 1px solid transparent;
+    font-family: inherit; font-size: 0.9375rem; font-weight: 500; cursor: pointer;
+    transition: background-color 160ms ease-out, border-color 160ms ease-out;
+  }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .btn--primary { background: var(--accent); color: var(--accent-ink); }
+  .btn--primary:hover { background: color-mix(in srgb, var(--accent) 86%, var(--ink)); }
+  .btn--secondary { background: var(--surface); color: var(--ink); border-color: var(--line); }
+  .btn--secondary:hover { border-color: var(--ink-3); }
+  .btn--ghost { background: transparent; color: var(--ink-2); }
+  .btn--ghost:hover { background: var(--sunken); color: var(--ink); }
+  .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+  .field {
+    display: flex; align-items: center; gap: var(--s-3);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-control); padding: 0 var(--s-4); min-height: 48px;
+    color: var(--ink-3); font-size: 0.9375rem;
+  }
+  .field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+
+  /* ============================================================
+     SWATCHES
+     ============================================================ */
+  .swatch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--s-4); }
+  .swatch { border: 1px solid var(--line); border-radius: var(--r-panel); overflow: hidden; background: var(--surface); }
+  .swatch__chip { height: 76px; display: flex; align-items: flex-end; padding: var(--s-3); }
+  .swatch__body { padding: var(--s-3) var(--s-4) var(--s-4); display: flex; flex-direction: column; gap: 2px; }
+  .swatch__name { font-weight: 450; font-size: 0.9375rem; }
+  .swatch__meta { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.875rem; min-width: 560px; }
+  th, td { text-align: left; padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--line-soft); }
+  th { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-2); font-weight: 450; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .cvd-cell { display: flex; align-items: center; gap: var(--s-2); }
+  .cvd-dot { width: 20px; height: 20px; border-radius: 5px; border: 1px solid var(--line); flex: none; }
+
+  /* ============================================================
+     ICON SPECIMENS
+     ============================================================ */
+  .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 1px; background: var(--line-soft); border: 1px solid var(--line); border-radius: var(--r-panel); overflow: hidden; }
+  .icon-cell { background: var(--surface); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-2); }
+  .icon-cell svg { width: 26px; height: 26px; color: var(--ink); }
+  .icon-cell b { font-size: 0.875rem; font-weight: 500; }
+  .icon-cell span { font-size: 0.78rem; color: var(--ink-3); line-height: 1.45; }
+
+  /* ============================================================
+     PRODUCT MOCKUP
+     ============================================================ */
+  .app {
+    border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+    background: var(--paper); display: grid; grid-template-rows: auto 1fr;
+  }
+  .app__bar {
+    display: flex; align-items: center; gap: var(--s-3);
+    padding: var(--s-3) var(--s-4); background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .app__mark { display: flex; align-items: center; gap: var(--s-2); font-weight: 450; letter-spacing: -0.01em; }
+  .app__mark svg { width: 20px; height: 20px; color: var(--accent); }
+  .app__body { display: grid; grid-template-columns: 1fr 300px 132px; min-height: 620px; }
+  .app__thread { order: 1; }
+  .app__panel  { order: 2; }
+  .app__rail   { order: 3; }
+  @media (max-width: 900px) { .app__body { grid-template-columns: 1fr 116px; } .app__panel { display: none; } }
+  @media (max-width: 560px) { .app__body { grid-template-columns: 1fr; } .app__rail { display: none; } }
+
+  .app__rail { border-left: 1px solid var(--line); background: var(--surface); padding: 0; display: flex; flex-direction: column; gap: 0; }
+  .rail-item {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: var(--s-3) 2px; border-radius: 0;
+    color: var(--ink-2); cursor: pointer; position: relative; border: none; background: none;
+    font-family: inherit; flex: 1; min-height: 0; width: 100%;
+  }
+  .rail-item svg.rail-glyph { width: 40px; height: 40px; }
+  .rail-item small { font-size: 1.2rem; font-weight: 100; letter-spacing: 0.01em; line-height: 1.4; }
+  .rail-item:hover { background: var(--sunken); color: var(--ink); }
+  .rail-item[aria-current="true"] { background: var(--ready-tint); color: var(--ready); }
+  .rail-item__state { position: absolute; top: 10px; right: 18px; width: 18px; height: 18px; }
+
+  .app__thread { padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-5); min-width: 0; }
+  .msg { display: flex; flex-direction: column; gap: var(--s-2); max-width: 62ch; }
+  .msg--user { align-self: flex-end; align-items: flex-end; }
+  .msg__who { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-3); }
+  .msg__body { font-size: 0.9375rem; line-height: 1.65; }
+  .msg--user .msg__body {
+    background: var(--sunken); border: 1px solid var(--line);
+    border-radius: 12px 12px 4px 12px; padding: var(--s-3) var(--s-4);
+  }
+  .toolcall {
+    display: inline-flex; align-items: center; gap: var(--s-2); align-self: flex-start;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-pill);
+    padding: 5px var(--s-3) 5px var(--s-2); font-family: var(--mono); font-size: 0.75rem; color: var(--ink-2);
+  }
+  .toolcall svg { width: 15px; height: 15px; color: var(--accent); }
+  .toolcall b { color: var(--ink); font-weight: 500; }
+  details.reason { border-top: 1px solid var(--line-soft); padding-top: var(--s-2); }
+  details.reason summary {
+    display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none;
+    font-size: 0.8125rem; color: var(--ink-3); width: fit-content;
+  }
+  details.reason summary::-webkit-details-marker { display: none; }
+  details.reason summary svg { width: 15px; height: 15px; }
+  details.reason p { margin-top: var(--s-2); font-size: 0.875rem; color: var(--ink-2); border-left: 2px solid var(--line); padding-left: var(--s-3); }
+
+  .composer { margin-top: auto; display: flex; flex-direction: column; gap: var(--s-2); }
+  .composer__docs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .composer__row { display: flex; align-items: stretch; gap: var(--s-2); }
+  .composer__row .btn { height: auto; }
+  .composer__hint { font-size: 0.75rem; color: var(--ink-3); }
+  .composer__input {
+    flex: 1; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: var(--s-3) var(--s-4); min-height: 52px;
+    color: var(--ink-2); font-size: 1.0625rem; display: flex; align-items: center;
+  }
+
+  .app__panel { border-left: 1px solid var(--line); background: var(--surface); box-shadow: -18px 0 48px -14px rgba(0,0,0,0.20); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-4); }
+  .panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+  .panel__head h3 { font-size: 0.9375rem; }
+  .server { border: 1px solid var(--line); border-radius: var(--r-panel); padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-2); }
+  .server__top { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+  .server__name { font-size: 0.875rem; font-weight: 450; }
+  .server__meta { font-family: var(--mono); font-size: 0.7rem; color: var(--ink-3); }
+  .tools { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tool-pill { font-family: var(--mono); font-size: 0.7rem; padding: 3px 8px; border-radius: var(--r-pill); background: var(--sunken); color: var(--ink-2); border: 1px solid var(--line-soft); }
+
+  .live { position: relative; }
+  .live::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
+    animation: pulse 2.4s ease-out infinite;
+  }
+  @keyframes pulse { 70%, 100% { box-shadow: 0 0 0 7px transparent; } }
+
+  /* spec lists */
+  .spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s-5); }
+  .spec h3 { margin-bottom: var(--s-2); display: flex; align-items: center; gap: var(--s-2); }
+  .spec h3 svg { width: 18px; height: 18px; color: var(--accent); }
+  .spec p { color: var(--ink-2); font-size: 0.9rem; }
+  pre {
+    margin: 0; padding: var(--s-4); background: var(--sunken); border: 1px solid var(--line);
+    border-radius: var(--r-panel); overflow-x: auto; font-family: var(--mono);
+    font-size: 0.78rem; line-height: 1.75; color: var(--ink-2);
+  }
+  pre b { color: var(--ink); font-weight: 500; }
+  .row { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--sunken); border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 5px; }
+  .rule { height: 1px; background: var(--line); border: 0; margin: 0; }
+</style>
+
+<!-- ================= ICON SPRITE =================
+     24-grid, 1.6 stroke, round caps and joins, currentColor.
+     Each glyph carries one enrichment detail that encodes the domain. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="12" rx="3"/>
+    <path d="M8 16v4l3.8-4"/>
+    <circle cx="9" cy="10" r="0.75" fill="currentColor" stroke="none"/>
+    <circle cx="12" cy="10" r="1.05" fill="currentColor" stroke="none"/>
+    <circle cx="15.2" cy="10" r="1.4" fill="currentColor" stroke="none"/>
+  </symbol>
+
+  <symbol id="i-docs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h7l5 5v13H6z"/>
+    <path d="M13 3v5h5"/>
+    <path d="M9 12h6M9 14.8h4"/>
+    <circle cx="9.4" cy="18" r="0.85" fill="currentColor" stroke="none"/>
+    <circle cx="12.2" cy="18" r="0.85" fill="currentColor" stroke="none"/>
+    <circle cx="15" cy="18" r="0.85" fill="currentColor" stroke="none"/>
+  </symbol>
+
+  <symbol id="i-mcp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="6.5" width="10.5" height="11" rx="2.5"/>
+    <path d="M1.6 12H4"/>
+    <path d="M14.5 9.2h4M14.5 12h4M14.5 14.8h4"/>
+    <circle cx="19.8" cy="9.2" r="1.1"/>
+    <circle cx="19.8" cy="12" r="1.1"/>
+    <circle cx="19.8" cy="14.8" r="1.1"/>
+  </symbol>
+
+  <symbol id="i-agents" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2.8 18.9 6.7v7.8L12 18.4 5.1 14.5V6.7z"/>
+    <circle cx="9.9" cy="10.2" r="0.95" fill="currentColor" stroke="none"/>
+    <circle cx="14.1" cy="10.2" r="0.95" fill="currentColor" stroke="none"/>
+    <path d="M6.2 18.6c2.9 2.6 8.4 2.6 11.5-.4"/>
+    <path d="M17.9 15.1l.4 3.4-3.3.3"/>
+  </symbol>
+
+  <symbol id="i-memory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4.5" y="6" width="15" height="12" rx="2.4"/>
+    <path d="M2 10.6l1.6 1.4L2 13.4"/>
+    <path d="M8.6 11.2v3.4M12 9.4v5.2M15.4 10.4v4.2"/>
+  </symbol>
+
+  <symbol id="i-vector" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="12" cy="6.2" rx="7" ry="2.9"/>
+    <path d="M5 6.2v11.6c0 1.6 3.13 2.9 7 2.9s7-1.3 7-2.9V6.2"/>
+    <path d="M5 12c0 1.6 3.13 2.9 7 2.9s7-1.3 7-2.9"/>
+    <circle cx="9.6" cy="17.6" r="0.85" fill="currentColor" stroke="none"/>
+    <circle cx="12.3" cy="18.2" r="0.85" fill="currentColor" stroke="none"/>
+    <circle cx="15" cy="17.4" r="0.85" fill="currentColor" stroke="none"/>
+  </symbol>
+
+  <symbol id="i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="6.2" y="6.2" width="11.6" height="11.6" rx="2.6"/>
+    <path d="M9.4 6.2V3.4M14.6 6.2V3.4M9.4 17.8v2.8M14.6 17.8v2.8M6.2 9.4H3.4M6.2 14.6H3.4M17.8 9.4h2.8M17.8 14.6h2.8"/>
+    <path d="M12.8 9.1l-2 3.3h2.4l-2 3.1"/>
+  </symbol>
+
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20.8 3.4 3.6 10.3l6.5 2.7 2.7 6.5z"/>
+    <path d="M20.8 3.4 10.1 13"/>
+    <path d="M2.6 17.6 5 15.2"/>
+  </symbol>
+
+  <symbol id="i-attach" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 2.8H7.2A1.7 1.7 0 0 0 5.5 4.5v15A1.7 1.7 0 0 0 7.2 21.2h9.6a1.7 1.7 0 0 0 1.7-1.7V8.1z"/>
+    <path d="M13 2.8v5.3h5.5"/>
+    <path d="M12 18v-5.6M9.7 14.4 12 12.1l2.3 2.3"/>
+  </symbol>
+
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4.4 6.9 19.6 5.6"/>
+    <path d="M9.4 6.5 9.2 4.3l5-.4.2 2.2"/>
+    <path d="M6.6 7.6l1.1 11.6a1.7 1.7 0 0 0 1.7 1.5h5.2a1.7 1.7 0 0 0 1.7-1.5l1.1-11.6"/>
+    <path d="M10.6 11v6M13.4 11v6"/>
+  </symbol>
+
+  <symbol id="i-ready" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="8.6"/>
+    <path d="M8.2 12.3l2.6 2.6 5-5.6"/>
+  </symbol>
+
+  <symbol id="i-attn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3.6 21.2 19.6H2.8z"/>
+    <path d="M12 9.6v4.2"/>
+    <circle cx="12" cy="16.8" r="1" fill="currentColor" stroke="none"/>
+  </symbol>
+
+  <symbol id="i-offline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2.9 21.1 12 12 21.1 2.9 12z"/>
+    <path d="M9.2 14.8 14.8 9.2"/>
+  </symbol>
+
+  <symbol id="i-tool" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2.8" y="4.8" width="18.4" height="14.4" rx="2.6"/>
+    <path d="M7.2 10.2l2.4 2.3-2.4 2.3"/>
+    <path d="M12.4 14.8h4.4"/>
+  </symbol>
+
+  <symbol id="i-reason" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9.4 4.8C6.6 5.6 5 8 5 12s1.6 6.4 4.4 7.2"/>
+    <path d="M14.6 4.8C17.4 5.6 19 8 19 12s-1.6 6.4-4.4 7.2"/>
+    <circle cx="9.2" cy="12" r="0.85" fill="currentColor" stroke="none"/>
+    <circle cx="12" cy="12" r="0.85" fill="currentColor" stroke="none"/>
+    <circle cx="14.8" cy="12" r="0.85" fill="currentColor" stroke="none"/>
+  </symbol>
+
+  <symbol id="i-stream" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12h2.2M9.4 12h2.2M15.8 12H18"/>
+    <path d="M6.6 8.4v7.2M13 6.6v10.8M19.4 9.6v4.8"/>
+  </symbol>
+</svg>
+
+<div class="page">
+
+  <!-- ==================== MASTHEAD ==================== -->
+  <header class="stack">
+    <div class="eyebrow">Design system · v1</div>
+    <h1>Tanzu Chat Faceplate</h1>
+    <p class="lede">
+      A minimal visual system for Tanzu Platform Chat, built for an operations audience:
+      calm surfaces, generous margins, and state you can read at a glance — without relying on colour,
+      and without a single red-versus-green judgement anywhere in the interface.
+    </p>
+    <div class="row" style="margin-top:var(--s-2)">
+      <span class="pill pill--ready"><svg><use href="#i-ready"/></svg>Ready</span>
+      <span class="pill pill--attn"><svg><use href="#i-attn"/></svg>Degraded</span>
+      <span class="pill pill--offline"><svg><use href="#i-offline"/></svg>Offline</span>
+      <span class="pill pill--quiet pill--mono">circle · triangle · diamond</span>
+    </div>
+    <p class="note">
+      Three states, three silhouettes, three hues, three words. Remove the colour and the meaning survives —
+      that is the whole thesis of this system.
+    </p>
+  </header>
+
+  <!-- ==================== THE PRODUCT ==================== -->
+  <section>
+    <h2 class="eyebrow">The product</h2>
+    <div class="app">
+      <div class="app__bar">
+        <span class="app__mark"><svg><use href="#i-chat"/></svg> Tanzu Platform Chat</span>
+        <span style="flex:1"></span>
+        <span class="pill pill--quiet pill--mono"><svg><use href="#i-model"/></svg>gpt-4o-mini</span>
+        <span class="pill pill--ready"><svg><use href="#i-ready"/></svg>Connected</span>
+      </div>
+
+      <div class="app__body">
+        <!-- rail: icon + label, never icon alone -->
+        <nav class="app__rail" aria-label="Sections">
+          <button class="rail-item" aria-current="true">
+            <svg class="rail-glyph"><use href="#i-chat"/></svg><small>Chat</small>
+            <svg class="rail-item__state" style="color:var(--ready)"><use href="#i-ready"/></svg>
+          </button>
+          <button class="rail-item">
+            <svg class="rail-glyph"><use href="#i-docs"/></svg><small>Docs</small>
+            <svg class="rail-item__state" style="color:var(--ready)"><use href="#i-ready"/></svg>
+          </button>
+          <button class="rail-item">
+            <svg class="rail-glyph"><use href="#i-mcp"/></svg><small>MCP</small>
+            <svg class="rail-item__state" style="color:var(--attn)"><use href="#i-attn"/></svg>
+          </button>
+          <button class="rail-item">
+            <svg class="rail-glyph"><use href="#i-agents"/></svg><small>Agents</small>
+            <svg class="rail-item__state" style="color:var(--ready)"><use href="#i-ready"/></svg>
+          </button>
+          <button class="rail-item">
+            <svg class="rail-glyph"><use href="#i-memory"/></svg><small>Memory</small>
+          </button>
+        </nav>
+
+        <!-- thread -->
+        <div class="app__thread">
+          <div class="msg msg--user">
+            <span class="msg__who">You</span>
+            <div class="msg__body">Which apps are running in the dev space, and how much memory is the billing API using?</div>
+          </div>
+
+          <div class="msg">
+            <span class="msg__who">Assistant</span>
+            <span class="toolcall"><svg><use href="#i-tool"/></svg><b>cf_apps</b> · Cloud Foundry MCP · 1.2s</span>
+            <div class="msg__body">
+              Three applications are in <b>dev</b>. <b>billing-api</b> is running two instances at 512&nbsp;MB each,
+              currently averaging 61% of its allocation — comfortable, but the second instance has been
+              above 80% during the nightly batch window.
+            </div>
+            <details class="reason">
+              <summary><svg><use href="#i-reason"/></svg>Reasoning</summary>
+              <p>Called cf_apps for the space listing, then filtered to billing-api to read instance-level memory rather than the aggregate.</p>
+            </details>
+          </div>
+
+          <div class="composer">
+            <div class="composer__docs">
+              <span class="pill pill--quiet"><svg><use href="#i-docs"/></svg>runbook.pdf</span>
+              <span class="pill pill--quiet"><svg><use href="#i-docs"/></svg>capacity-plan.pdf</span>
+              <button class="btn btn--ghost" style="min-height:28px;padding:0 10px;font-size:0.8125rem">
+                <svg><use href="#i-attach"/></svg>Add document
+              </button>
+            </div>
+            <div class="composer__row">
+              <div class="composer__input">Ask about your platform…</div>
+              <button class="btn btn--primary live"><svg><use href="#i-send"/></svg>Send</button>
+            </div>
+            <p class="composer__hint">Press Enter to send, Shift+Enter for a new line</p>
+          </div>
+        </div>
+
+        <!-- panel -->
+        <aside class="app__panel">
+          <div class="panel__head">
+            <h3>MCP servers</h3>
+            <span class="pill pill--attn"><svg><use href="#i-attn"/></svg>2 of 3</span>
+          </div>
+
+          <div class="server">
+            <div class="server__top">
+              <span class="server__name">Cloud Foundry MCP</span>
+              <span class="pill pill--ready"><svg><use href="#i-ready"/></svg>Ready</span>
+            </div>
+            <span class="server__meta">Streamable HTTP</span>
+            <div class="tools">
+              <span class="tool-pill">cf_apps</span><span class="tool-pill">cf_scale</span><span class="tool-pill">cf_logs</span>
+            </div>
+          </div>
+
+          <div class="server">
+            <div class="server__top">
+              <span class="server__name">Time Server</span>
+              <span class="pill pill--ready"><svg><use href="#i-ready"/></svg>Ready</span>
+            </div>
+            <span class="server__meta">SSE</span>
+            <div class="tools">
+              <span class="tool-pill">get_current_time</span><span class="tool-pill">convert_time</span>
+            </div>
+          </div>
+
+          <div class="server">
+            <div class="server__top">
+              <span class="server__name">vCenter MCP</span>
+              <span class="pill pill--offline"><svg><use href="#i-offline"/></svg>Offline</span>
+            </div>
+            <span class="server__meta">SSE · handshake timed out</span>
+            <button class="btn btn--secondary" style="min-height:36px;font-size:0.8125rem;padding:0 var(--s-3)">Retry connection</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <p class="note" style="margin-top:var(--s-3)">
+      Every control states what it does. The send button carries the word <b>Send</b> and matches the
+      field's height exactly; the failed server offers <b>Retry connection</b> in place of its tool list,
+      because that is the only thing worth doing to it. Destinations are square and full-bleed — the
+      highlight is the whole row, with no unhighlighted gutter between neighbours — and the current one
+      is filled rather than merely tinted. Below 600px the rail becomes a bottom bar and panels arrive
+      as sheets from the bottom, matching where the tap happened rather than sliding in from the side.
+    </p>
+  </section>
+
+  <!-- ==================== PRINCIPLES ==================== -->
+  <section>
+    <h2 class="eyebrow">Principles</h2>
+    <div class="spec">
+      <div>
+        <h3><svg><use href="#i-ready"/></svg>Colour is the third channel</h3>
+        <p>Shape first, word second, colour third. Every state is a distinct silhouette and a plain-English label before it is a hue, which satisfies WCAG 1.4.1 by construction rather than by audit.</p>
+      </div>
+      <div>
+        <h3><svg><use href="#i-mcp"/></svg>Say what the control does</h3>
+        <p>No icon-only actions in the primary flow. Labels are verbs in the user's language — <em>Add document</em>, <em>Retry connection</em> — and every target clears 44&nbsp;px.</p>
+      </div>
+      <div>
+        <h3><svg><use href="#i-memory"/></svg>One accent, spent carefully</h3>
+        <p>A single viridian carries brand, primary action, and the healthy state. Amber and violet appear only when something needs attention, so noticing them means something.</p>
+      </div>
+      <div>
+        <h3><svg><use href="#i-docs"/></svg>Room is a feature</h3>
+        <p>Panels sit on an 8&nbsp;px grid with 24&nbsp;px interior gutters and a 62-character measure for prose. Density is reserved for machine strings, where scanning beats reading.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== COLOUR ==================== -->
+  <section>
+    <h2 class="eyebrow">Colour · measured, not asserted</h2>
+    <p class="lede" style="margin-bottom:var(--s-5)">
+      The accent descends from the product's existing mint seed. The signal hues do not:
+      they were chosen by simulating protanopia, deuteranopia and tritanopia, then keeping the trio
+      with the largest worst-case separation.
+    </p>
+
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="swatch__chip" style="background:var(--ready-tint)"><span class="pill pill--ready"><svg><use href="#i-ready"/></svg>Ready</span></div>
+        <div class="swatch__body">
+          <span class="swatch__name">Viridian</span>
+          <span class="swatch__meta">#0B6B57 · on tint 5.26:1</span>
+          <span class="swatch__meta">brand · primary action · healthy</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch__chip" style="background:var(--attn-tint)"><span class="pill pill--attn"><svg><use href="#i-attn"/></svg>Degraded</span></div>
+        <div class="swatch__body">
+          <span class="swatch__name">Amber</span>
+          <span class="swatch__meta">#7A4A05 · on tint 6.14:1</span>
+          <span class="swatch__meta">partial · slow · needs a look</span>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch__chip" style="background:var(--offline-tint)"><span class="pill pill--offline"><svg><use href="#i-offline"/></svg>Offline</span></div>
+        <div class="swatch__body">
+          <span class="swatch__name">Violet</span>
+          <span class="swatch__meta">#5A32A3 · on tint 6.79:1</span>
+          <span class="swatch__meta">unbound · failed · not red</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin:var(--s-6) 0 var(--s-3)">How the trio survives colour blindness</h3>
+    <div class="panel scroll-x">
+      <table>
+        <thead>
+          <tr><th>Vision</th><th>Ready</th><th>Degraded</th><th>Offline</th><th>Worst pair</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Typical</td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#0B6B57"></span>#0B6B57</span></td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#7A4A05"></span>#7A4A05</span></td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#5A32A3"></span>#5A32A3</span></td>
+            <td class="num">ΔE 61</td>
+          </tr>
+          <tr>
+            <td>Protanopia</td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#676356"></span>#676356</span></td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#5a4e00"></span>#5A4E00</span></td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#004ca6"></span>#004CA6</span></td>
+            <td class="num">ΔE 35</td>
+          </tr>
+          <tr>
+            <td>Deuteranopia</td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#5c5b58"></span>#5C5B58</span></td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#655907"></span>#655907</span></td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#0049a1"></span>#0049A1</span></td>
+            <td class="num">ΔE 42</td>
+          </tr>
+          <tr>
+            <td>Tritanopia</td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#006c65"></span>#006C65</span></td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#863e3e"></span>#863E3E</span></td>
+            <td><span class="cvd-cell"><span class="cvd-dot" style="background:#464e66"></span>#464E66</span></td>
+            <td class="num">ΔE 34</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-top:var(--s-3)">
+      Simulated with the Viénot–Brettel dichromat matrices; separation is CIE76 ΔE, where anything above 20 reads as
+      clearly different. The first trio tried here — teal, amber and plum — collapsed to <b>ΔE 8</b> under deuteranopia.
+      Violet replaced plum for that reason alone.
+    </p>
+
+    <h3 style="margin:var(--s-6) 0 var(--s-3)">Why the pastels are decoration</h3>
+    <div class="panel">
+      <div class="row" style="gap:var(--s-4)">
+        <div class="row" style="gap:6px">
+          <span class="cvd-dot" style="background:#ebeae5"></span>
+          <span class="cvd-dot" style="background:#efe6c6"></span>
+          <span class="cvd-dot" style="background:#dbe4fb"></span>
+          <span class="swatch__meta">tints under protanopia — ΔE 8 to 22</span>
+        </div>
+      </div>
+      <p class="note" style="margin-top:var(--s-3)">
+        Pastel tints are low-chroma by definition, so under simulation the mint and wheat backgrounds land within
+        <b>ΔE 8</b> of each other — indistinguishable. They are surfaces that make the interface calm; they are never
+        the thing carrying the message. That job belongs to the ink, the silhouette and the label.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================== ICONS ==================== -->
+  <section>
+    <h2 class="eyebrow">Icons · one enrichment each</h2>
+    <p class="lede" style="margin-bottom:var(--s-5)">
+      A bespoke set on a 24-unit grid, 1.6&nbsp;px strokes, round joins, drawn in <code>currentColor</code> so a glyph
+      inherits whatever state it sits in. Each carries one extra detail that encodes something true about
+      this product rather than a generic category.
+    </p>
+    <div class="icon-grid">
+      <div class="icon-cell"><svg><use href="#i-chat"/></svg><b>Chat</b><span>Dots grow left to right — tokens arriving, not a static bubble.</span></div>
+      <div class="icon-cell"><svg><use href="#i-docs"/></svg><b>Documents</b><span>Text lines resolve into three points: a page that became embeddings.</span></div>
+      <div class="icon-cell"><svg><use href="#i-mcp"/></svg><b>MCP servers</b><span>A hub exposing three ports — tools published over one transport.</span></div>
+      <div class="icon-cell"><svg><use href="#i-agents"/></svg><b>A2A agents</b><span>A closed hexagon with a return arc: an independent system that answers.</span></div>
+      <div class="icon-cell"><svg><use href="#i-memory"/></svg><b>Memory</b><span>Bars of unequal height with content sliding off the left edge.</span></div>
+      <div class="icon-cell"><svg><use href="#i-vector"/></svg><b>Vector store</b><span>A store whose contents are points, not rows.</span></div>
+      <div class="icon-cell"><svg><use href="#i-model"/></svg><b>Model</b><span>Silicon with a bolt inside — the inference happens elsewhere.</span></div>
+      <div class="icon-cell"><svg><use href="#i-tool"/></svg><b>Tool call</b><span>A prompt chevron: the model reached out and something ran.</span></div>
+      <div class="icon-cell"><svg><use href="#i-reason"/></svg><b>Reasoning</b><span>Thought held between brackets — collapsed by default.</span></div>
+      <div class="icon-cell"><svg><use href="#i-stream"/></svg><b>Streaming</b><span>An uneven waveform: cadence, not a spinner.</span></div>
+      <div class="icon-cell"><svg><use href="#i-send"/></svg><b>Send</b><span>A plane with a trailing tick for departure.</span></div>
+      <div class="icon-cell"><svg><use href="#i-attach"/></svg><b>Add document</b><span>A page taking something in, arrow inside the sheet.</span></div>
+      <div class="icon-cell"><svg><use href="#i-trash"/></svg><b>Delete</b><span>Lid tilted off the rim — an action mid-motion, not a closed box.</span></div>
+      <div class="icon-cell"><svg><use href="#i-ready" /></svg><b>Ready</b><span>Circle. The only closed, unbroken outline in the state set.</span></div>
+      <div class="icon-cell"><svg><use href="#i-attn"/></svg><b>Degraded</b><span>Triangle. Rising to a point, universally read as caution.</span></div>
+      <div class="icon-cell"><svg><use href="#i-offline"/></svg><b>Offline</b><span>Diamond struck through — a shape no other glyph uses.</span></div>
+    </div>
+  </section>
+
+  <!-- ==================== COMPONENTS ==================== -->
+  <section>
+    <h2 class="eyebrow">Components</h2>
+    <div class="stack">
+
+      <div class="panel stack">
+        <h3>Pills</h3>
+        <p class="note">28&nbsp;px minimum height, fully round, 1&nbsp;px border at 26% of the ink. Icon then label, always in that order.</p>
+        <div class="row">
+          <span class="pill pill--ready"><svg><use href="#i-ready"/></svg>Ready</span>
+          <span class="pill pill--attn"><svg><use href="#i-attn"/></svg>2 of 3 healthy</span>
+          <span class="pill pill--offline"><svg><use href="#i-offline"/></svg>Unbound</span>
+          <span class="pill pill--quiet"><svg><use href="#i-docs"/></svg>runbook.pdf</span>
+          <span class="pill pill--quiet pill--mono"><svg><use href="#i-model"/></svg>text-embedding-3-small</span>
+          <span class="pill pill--quiet pill--mono">Streamable HTTP</span>
+        </div>
+      </div>
+
+      <div class="panel stack">
+        <h3>Controls</h3>
+        <p class="note">One primary action per view. Secondary actions are outlined; tertiary are quiet until hovered. Nothing important is icon-only.</p>
+        <div class="row">
+          <button class="btn btn--primary"><svg><use href="#i-send"/></svg>Send</button>
+          <button class="btn btn--secondary"><svg><use href="#i-attach"/></svg>Add document</button>
+          <button class="btn btn--ghost"><svg><use href="#i-trash"/></svg>Delete all</button>
+          <button class="btn btn--primary" disabled><svg><use href="#i-stream"/></svg>Streaming…</button>
+        </div>
+        <div class="field" style="max-width:420px">Ask about your platform…</div>
+        <p class="note">Focus is a 2&nbsp;px accent ring at 2&nbsp;px offset — never removed, visible on both grounds. Tab through this page to see it.</p>
+      </div>
+
+      <div class="panel stack">
+        <h3>Containers</h3>
+        <p class="note">
+          10&nbsp;px radius, one hairline border, no drop shadows — depth comes from the border and a tinted ground,
+          which keeps the interface flat enough to stay legible at high contrast. Interior padding 24&nbsp;px on panels,
+          12&nbsp;px on nested cards, 8&nbsp;px between siblings.
+        </p>
+        <div class="server" style="max-width:330px">
+          <div class="server__top">
+            <span class="server__name">Cloud Foundry MCP</span>
+            <span class="pill pill--ready"><svg><use href="#i-ready"/></svg>Ready</span>
+          </div>
+          <span class="server__meta">Streamable HTTP · 3 tools</span>
+          <div class="tools">
+            <span class="tool-pill">cf_apps</span><span class="tool-pill">cf_scale</span><span class="tool-pill">cf_logs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== TOKENS ==================== -->
+  <section>
+    <h2 class="eyebrow">Tokens</h2>
+    <p class="lede" style="margin-bottom:var(--s-4)">
+      Named to sit alongside the app's existing Material 3 variables, so adoption is a palette swap rather than a rewrite.
+    </p>
+    <pre><b>:root</b> {
+  <b>/* neutrals — biased green-cyan toward the accent */</b>
+  --md-sys-color-surface:            #F5F8F6;   /* paper       */
+  --md-sys-color-surface-container:  #FFFFFF;   /* cards       */
+  --md-sys-color-surface-variant:    #EAF0EC;   /* sunken      */
+  --md-sys-color-outline-variant:    #D7E0DA;   /* hairline    */
+  --md-sys-color-on-surface:         #121A17;   /* ink   16.6:1 */
+  --md-sys-color-on-surface-variant: #47524C;   /* ink-2  7.6:1 */
+  --md-sys-color-outline:            #69736D;   /* ink-3  4.6:1 */
+
+  <b>/* signal — three hues, verified across three CVD types */</b>
+  --md-sys-color-primary:            #0B6B57;   /* viridian: brand, action, ready */
+  --md-sys-color-on-primary:         #FFFFFF;
+  --md-sys-color-primary-container:  #D7EDE5;
+  --md-sys-color-warning:            #7A4A05;   /* amber:  degraded */
+  --md-sys-color-warning-container:  #F8E7C8;
+  --md-sys-color-error:              #5A32A3;   /* violet: offline  */
+  --md-sys-color-error-container:    #E7E0FA;
+
+  <b>/* geometry */</b>
+  --md-radius-pill: 999px;  --md-radius-panel: 10px;  --md-radius-control: 8px;
+  --md-spacing-1: 4px;  --md-spacing-2: 8px;   --md-spacing-3: 12px;  --md-spacing-4: 16px;
+  --md-spacing-5: 24px; --md-spacing-6: 32px;  --md-spacing-7: 48px;
+  <b>/* type — light, and only weights the app actually loads */</b>
+  --md-weight-display: 300;   /* display and headings */
+  --md-weight-body: 400;      /* body, labels, titles  */
+  --md-weight-emphasis: 500;  /* the ceiling: buttons, b/strong */
+  --md-weight-nav-label: 100; /* needs Roboto Thin in the font request */
+  --md-target-min: 44px;
+}</pre>
+    <p class="note" style="margin-top:var(--s-3)">
+      The one rename that matters: <code>error</code> is violet. Nothing in this interface is red, because red
+      against green is the single most common thing a colour-blind operator cannot resolve — and this product asks
+      people to judge health at a glance all day.
+    </p>
+  </section>
+
+  <hr class="rule" style="margin-top:var(--s-8)">
+  <p class="note" style="margin-top:var(--s-4)">
+    Contrast ratios are WCAG 2.1 relative luminance; CVD figures are CIE76 ΔE on Viénot–Brettel simulations.
+    Every pair shown passes AA, and all but one passes AAA.
+  </p>
+</div>

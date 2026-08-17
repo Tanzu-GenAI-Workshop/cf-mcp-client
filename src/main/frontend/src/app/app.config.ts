@@ -4,6 +4,7 @@ import {routes} from './app.routes';
 import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
 import {provideHttpClient, withInterceptors} from '@angular/common/http';
 import {provideMarkdown} from 'ngx-markdown';
+import {provideFaceplateIcons} from '../icons/faceplate-icons';
 import {HttpRequest, HttpHandlerFn} from '@angular/common/http';
 
 // Interceptor to add credentials to all requests
@@ -22,6 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([credentialsInterceptor])),
-    provideMarkdown()
+    provideMarkdown(),
+    provideFaceplateIcons()
   ]
 };

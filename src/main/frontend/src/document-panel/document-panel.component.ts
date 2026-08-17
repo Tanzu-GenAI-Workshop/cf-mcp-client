@@ -164,9 +164,9 @@ export class DocumentPanelComponent implements AfterViewInit {
 
   getFileTypeIcon(fileName: string): string {
     if (fileName.toLowerCase().endsWith('.pdf')) {
-      return 'picture_as_pdf';
+      return 'fp-docs';
     }
-    return 'insert_drive_file';
+    return 'fp-docs';
   }
 
   onFileSelected(event: Event) {

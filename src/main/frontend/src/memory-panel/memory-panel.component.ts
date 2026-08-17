@@ -89,7 +89,7 @@ export class MemoryPanelComponent implements AfterViewInit, OnChanges {
    * Get the current memory icon
    */
   getMemoryIcon(): string {
-    return this.metrics.memoryType === 'PERSISTENT' ? 'storage' : 'memory';
+    return this.metrics.memoryType === 'PERSISTENT' ? 'fp-vector' : 'fp-memory';
   }
 
   /**

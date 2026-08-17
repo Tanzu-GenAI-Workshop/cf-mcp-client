@@ -118,13 +118,13 @@ export class AgentsPanel implements AfterViewInit {
 
     switch (statusClass) {
       case 'status-green':
-        return 'check_circle';
+        return 'fp-ready';
       case 'status-orange':
-        return 'warning';
+        return 'fp-attention';
       case 'status-red':
-        return 'error';
+        return 'fp-offline';
       default:
-        return 'error';
+        return 'fp-offline';
     }
   }
 

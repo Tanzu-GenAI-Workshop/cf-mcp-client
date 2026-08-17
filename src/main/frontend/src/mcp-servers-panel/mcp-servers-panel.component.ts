@@ -103,18 +103,18 @@ export class McpServersPanelComponent implements AfterViewInit {
 
   getOverallStatusIcon(): string {
     if (!this.metrics?.mcpServers || this.metrics.mcpServers.length === 0) {
-      return 'error';
+      return 'fp-offline';
     }
 
     const hasUnhealthy = this.metrics.mcpServers.some(server => !server.healthy);
     const hasHealthy = this.metrics.mcpServers.some(server => server.healthy);
 
     if (hasUnhealthy && hasHealthy) {
-      return 'warning';
+      return 'fp-attention';
     } else if (hasHealthy) {
-      return 'check_circle';
+      return 'fp-ready';
     } else {
-      return 'error';
+      return 'fp-offline';
     }
   }
 

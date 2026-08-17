@@ -32,31 +32,31 @@ export class NavigationRailComponent {
   navigationItems = [
     {
       id: 'chat',
-      icon: 'chat',
+      icon: 'fp-chat',
       label: 'Chat',
       tooltip: 'Chat Model Status'
     },
     {
       id: 'document',
-      icon: 'description',
+      icon: 'fp-docs',
       label: 'Docs',
       tooltip: 'Document Management'
     },
     {
       id: 'mcp-servers',
-      icon: 'hub',
+      icon: 'fp-mcp',
       label: 'MCP',
       tooltip: 'MCP Server Connections'
     },
     {
       id: 'agents',
-      icon: 'smart_toy',
+      icon: 'fp-agents',
       label: 'Agents',
       tooltip: 'A2A Agent Connections'
     },
     {
       id: 'memory',
-      icon: 'psychology',
+      icon: 'fp-memory',
       label: 'Memory',
       tooltip: 'Conversation Memory'
     }
@@ -78,13 +78,13 @@ export class NavigationRailComponent {
         return {
           show: true,
           color: this.metrics.chatModel ? 'status-green' : 'status-red',
-          icon: this.metrics.chatModel ? 'check_circle' : 'error'
+          icon: this.metrics.chatModel ? 'fp-ready' : 'fp-offline'
         };
       case 'document':
         return {
           show: true,
           color: this.metrics.embeddingModel ? 'status-green' : 'status-red',
-          icon: this.metrics.embeddingModel ? 'check_circle' : 'error'
+          icon: this.metrics.embeddingModel ? 'fp-ready' : 'fp-offline'
         };
       case 'agents':
         const healthyAgents = this.metrics.a2aAgents.filter(agent => agent.healthy).length;
@@ -93,9 +93,9 @@ export class NavigationRailComponent {
           color: this.metrics.a2aAgents.length === 0 ? 'status-red' :
                  healthyAgents === this.metrics.a2aAgents.length ? 'status-green' :
                  healthyAgents > 0 ? 'status-orange' : 'status-red',
-          icon: this.metrics.a2aAgents.length === 0 ? 'error' :
-                healthyAgents === this.metrics.a2aAgents.length ? 'check_circle' :
-                healthyAgents > 0 ? 'warning' : 'error'
+          icon: this.metrics.a2aAgents.length === 0 ? 'fp-offline' :
+                healthyAgents === this.metrics.a2aAgents.length ? 'fp-ready' :
+                healthyAgents > 0 ? 'fp-attention' : 'fp-offline'
         };
       case 'mcp-servers':
         const healthyServers = this.metrics.mcpServers.filter(server => server.healthy).length;
@@ -103,14 +103,14 @@ export class NavigationRailComponent {
           show: this.metrics.mcpServers.length > 0,
           color: healthyServers === this.metrics.mcpServers.length ? 'status-green' :
                  healthyServers > 0 ? 'status-orange' : 'status-red',
-          icon: healthyServers === this.metrics.mcpServers.length ? 'check_circle' :
-                healthyServers > 0 ? 'warning' : 'error'
+          icon: healthyServers === this.metrics.mcpServers.length ? 'fp-ready' :
+                healthyServers > 0 ? 'fp-attention' : 'fp-offline'
         };
       case 'memory':
         return {
           show: true,
           color: this.metrics.conversationId ? 'status-green' : 'status-red',
-          icon: this.metrics.conversationId ? 'check_circle' : 'error'
+          icon: this.metrics.conversationId ? 'fp-ready' : 'fp-offline'
         };
       default:
         return { show: false, color: '', icon: '' };

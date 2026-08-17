@@ -39,13 +39,13 @@ function getOverallStatusIcon(agents: A2AAgent[]): string {
 
   switch (statusClass) {
     case 'status-green':
-      return 'check_circle';
+      return 'fp-ready';
     case 'status-orange':
-      return 'warning';
+      return 'fp-attention';
     case 'status-red':
-      return 'error';
+      return 'fp-offline';
     default:
-      return 'error';
+      return 'fp-offline';
   }
 }
 
@@ -183,12 +183,12 @@ describe('AgentsPanel Logic', () => {
 
   describe('getOverallStatusIcon', () => {
     it('should return error icon for no agents', () => {
-      expect(getOverallStatusIcon([])).toBe('error');
+      expect(getOverallStatusIcon([])).toBe('fp-offline');
     });
 
     it('should return check_circle for all healthy', () => {
       const agents = [createAgent({ healthy: true })];
-      expect(getOverallStatusIcon(agents)).toBe('check_circle');
+      expect(getOverallStatusIcon(agents)).toBe('fp-ready');
     });
 
     it('should return warning for partial health', () => {
@@ -196,12 +196,12 @@ describe('AgentsPanel Logic', () => {
         createAgent({ healthy: true }),
         createAgent({ healthy: false })
       ];
-      expect(getOverallStatusIcon(agents)).toBe('warning');
+      expect(getOverallStatusIcon(agents)).toBe('fp-attention');
     });
 
     it('should return error for all unhealthy', () => {
       const agents = [createAgent({ healthy: false })];
-      expect(getOverallStatusIcon(agents)).toBe('error');
+      expect(getOverallStatusIcon(agents)).toBe('fp-offline');
     });
   });
 

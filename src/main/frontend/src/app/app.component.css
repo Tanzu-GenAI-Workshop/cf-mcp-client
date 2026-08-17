@@ -16,12 +16,30 @@ header[role="banner"] {
 
 mat-toolbar {
   height: var(--md-spacing-16); /* 64px using Material Design spacing */
-  background: linear-gradient(135deg,
-    var(--md-sys-color-surface-container-high) 0%,
-    color-mix(in srgb, var(--md-sys-color-primary) 15%, var(--md-sys-color-surface-container-high) 85%) 100%
-  ) !important;
-  box-shadow: var(--md-sys-elevation-3dp);
+  /* Faceplate: flat surface with a hairline. Depth comes from the border,
+     not a gradient — it keeps the bar quiet at high contrast. */
+  background: var(--md-sys-color-surface-container) !important;
+  box-shadow: none;
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  gap: var(--md-spacing-3);
+  padding-inline: var(--md-spacing-4);
+}
+
+.app-mark {
+  color: var(--md-sys-color-primary);
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.topbar-status {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-2);
+}
+
+@media (max-width: 720px) {
+  .topbar-status .fp-pill--mono { display: none; }
 }
 
 .app-title {

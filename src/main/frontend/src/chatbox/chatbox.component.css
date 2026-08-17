@@ -45,13 +45,17 @@
 .chatbox-messages {
   overflow-y: auto;
   flex-grow: 1;
+  /* Faceplate: a comfortable measure. Prose past ~80ch is tiring, and an input
+     the full width of a 27" display is worse. */
+  width: 100%;
+  max-width: 820px;
+  margin-inline: auto;
   margin-bottom: var(--md-spacing-3); /* 12px using Material spacing */
   padding: var(--md-spacing-4); /* Increased padding for better visual separation */
   scrollbar-width: thin;
   scrollbar-color: var(--md-sys-color-outline-variant) transparent;
-  background-color: var(--md-sys-color-surface-dim);
-  border-radius: var(--md-spacing-3); /* 12px rounded corners */
-  border: 1px solid var(--md-sys-color-outline-variant);
+  /* Faceplate: the thread is the page, not a box inside it. */
+  background-color: transparent;
   position: relative; /* For positioning the scroll-to-bottom button */
 }
 
@@ -299,91 +303,105 @@
 
 /* ===== MATERIAL DESIGN 3 CHAT INPUT AREA ===== */
 .chatbox-footer {
-  margin-bottom: var(--md-spacing-4); /* 16px using Material spacing */
-  padding: var(--md-spacing-4); /* Add padding for visual consistency */
-  background-color: var(--md-sys-color-surface-container);
-  border-radius: var(--md-spacing-3); /* 12px rounded corners */
-  box-shadow: var(--md-sys-elevation-1dp);
+  margin-bottom: var(--md-spacing-4);
+  width: 100%;
+  max-width: 820px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-spacing-2);
+}
+
+/* Faceplate composer: a plain field and a control that says what it does. */
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  font: inherit;
+  font-size: var(--fp-composer-font);
+  line-height: 1.5;
+  color: var(--md-sys-color-on-surface);
+  background: var(--md-sys-color-surface-container-lowest);
   border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  /* border-box, because there is no global box-sizing reset: without it the
+     min-height below would sit on top of the padding and the field would
+     outgrow the button. */
+  box-sizing: border-box;
+  padding: var(--fp-composer-pad) var(--md-spacing-4);
+  min-height: var(--fp-composer-height);
+}
+
+.chat-input::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 1;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--md-sys-color-primary-rgb), 0.18);
+}
+
+.chat-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.send-button {
+  flex-shrink: 0;
+  align-self: stretch;      /* same height as the text box */
+  box-sizing: border-box;
+  height: auto;
+  min-height: var(--fp-composer-height);
+  padding: 0 var(--md-spacing-6);
+  border-radius: var(--fp-radius-control, 8px);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Unavailable, not invisible: the control keeps its shape and a legible label
+   so it still reads as the thing you press — it just isn't the live action yet. */
+.send-button:disabled,
+.send-button[disabled] {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  opacity: 1;
+}
+
+.send-button mat-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.send-button mat-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.chat-input-help {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--md-sys-color-outline);
 }
 
 .chat-input-container {
+  /* One line of composer text, plus its padding and border. The field and the
+     Send button both derive their height from this single expression, so their
+     text stays aligned at any font size, zoom level or device. */
+  --fp-composer-font: 1.0625rem;
+  --fp-composer-pad: 14px;
+  --fp-composer-height: calc((var(--fp-composer-font) * 1.5) + (2 * var(--fp-composer-pad)) + 2px);
+
   display: flex;
-  align-items: flex-start;
+  align-items: stretch; /* Send matches the field's height, and keeps matching as it grows */
   gap: var(--md-spacing-3); /* 12px Material spacing */
   width: 100%;
 }
 
-.chat-input-field {
-  flex: 1;
-  min-width: 0; /* Prevent flex item from overflowing */
-}
-
-/* Material Design outlined form field styling */
-.chat-input-field .mat-mdc-form-field-wrapper {
-  padding-bottom: 0;
-}
-
-.chat-input-field .mat-mdc-form-field-subscript-wrapper {
-  font-size: var(--md-sys-typescale-body-small-font-size);
-  line-height: var(--md-sys-typescale-body-small-line-height);
-  color: var(--md-sys-color-on-surface-variant);
-}
-
-/* Textarea styling for multiline input */
-.chat-input-field textarea {
-  resize: none;
-  font-family: var(--md-sys-typescale-font-family-plain);
-  font-size: var(--md-sys-typescale-body-large-font-size);
-  line-height: var(--md-sys-typescale-body-large-line-height);
-  color: var(--md-sys-color-on-surface);
-}
-
-.chat-input-field textarea::placeholder {
-  color: var(--md-sys-color-on-surface-variant);
-  opacity: 0.7;
-}
-
 /* Material Design FAB styling */
-.send-fab {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  margin-top: var(--md-spacing-2); /* Align with input field */
-  box-shadow: var(--md-sys-elevation-3dp);
-  transition:
-    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
-    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-emphasized);
-}
-
-.send-fab:hover:not(:disabled) {
-  box-shadow: var(--md-sys-elevation-4dp);
-  transform: scale(1.05);
-}
-
-.send-fab:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.send-fab mat-icon {
-  font-size: var(--md-sys-typescale-title-large-font-size);
-  width: 24px;
-  height: 24px;
-}
-
-/* Disabled states */
-.send-fab:disabled {
-  background-color: var(--md-sys-color-surface-variant) !important;
-  color: var(--md-sys-color-on-surface-variant) !important;
-  box-shadow: var(--md-sys-elevation-0dp) !important;
-  opacity: 0.6;
-}
 
 /* Focus and accessibility enhancements */
-.send-fab:focus-visible {
-  outline: var(--md-sys-state-focus-ring-width, 2px) solid var(--md-sys-color-primary);
-  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
-}
 
 /* Disabled state styling */
 .chatbox-footer button:disabled {
@@ -438,7 +456,6 @@ button:focus-visible:not(:disabled) {
 button:active:not(:disabled) {
   transform: scale(0.98);
 }
-
 
 /* Bot message container */
 .bot-message-container {
@@ -675,11 +692,8 @@ button:active:not(:disabled) {
   border: 1px solid var(--md-sys-color-outline-variant);
 }
 
-
-
 /* Material Design 3 Animations - replaced custom animations with standard patterns */
 /* Custom animations moved to _motion.scss for system-wide consistency */
-
 
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
@@ -700,53 +714,15 @@ button:active:not(:disabled) {
     background: rgba(255, 255, 255, 0.1);
   }
 
-  /* Enhanced chatbox footer contrast */
-  .chatbox-footer {
-    background-color: var(--md-sys-color-surface-container-high) !important;
-    border-color: var(--md-sys-color-outline) !important;
-  }
-
-  /* Better hint text visibility */
-  .chat-input-field .mat-mdc-form-field-subscript-wrapper,
-  .chat-input-field mat-hint {
+  .chat-input {
     color: var(--md-sys-color-on-surface) !important;
-    opacity: 0.87 !important;
-  }
-
-  /* Enhanced form field label and input text - comprehensive targeting */
-  .chat-input-field .mat-mdc-form-field-label,
-  .chat-input-field .mat-mdc-floating-label,
-  .chat-input-field .mdc-floating-label,
-  .chat-input-field .mat-mdc-form-field-label-wrapper .mat-mdc-form-field-label,
-  .chat-input-field .mdc-text-field__input,
-  .chat-input-field .mdc-text-field__label,
-  .chat-input-field mat-label,
-  .chat-input-field label,
-  .chat-input-field textarea {
-    color: var(--md-sys-color-on-surface) !important;
-    opacity: 0.9 !important;
-  }
-
-  /* Force better visibility for all label elements */
-  .chat-input-field .mat-mdc-form-field .mat-mdc-form-field-label,
-  .chat-input-field .mat-mdc-form-field .mdc-floating-label {
-    color: var(--md-sys-color-on-surface) !important;
-    opacity: 0.85 !important;
-    font-weight: 400 !important;
-  }
-
-  /* When field has focus or value, use primary color for label */
-  .chat-input-field .mat-mdc-form-field.mat-focused .mat-mdc-form-field-label,
-  .chat-input-field .mat-mdc-form-field.mat-form-field-has-label .mat-mdc-floating-label,
-  .chat-input-field .mat-mdc-form-field.mat-focused .mdc-floating-label {
-    color: var(--md-sys-color-primary) !important;
     opacity: 1 !important;
   }
 
   /* Better placeholder text visibility */
-  .chat-input-field textarea::placeholder {
+  .chat-input::placeholder {
     color: var(--md-sys-color-on-surface-variant) !important;
-    opacity: 0.7 !important;
+    opacity: 1 !important;
   }
 
   /* Enhanced Send button visibility */
@@ -757,20 +733,10 @@ button:active:not(:disabled) {
   }
 
   .chatbox-footer button[mat-flat-button]:disabled {
-    background-color: var(--md-sys-color-surface-variant) !important;
+    background-color: var(--md-sys-color-surface-container-high) !important;
     color: var(--md-sys-color-on-surface-variant) !important;
-    opacity: 0.5 !important;
-  }
-
-  /* Enhanced FAB send button */
-  .send-fab {
-    background-color: var(--md-sys-color-primary) !important;
-    color: var(--md-sys-color-on-primary) !important;
-  }
-
-  .send-fab:disabled {
-    background-color: var(--md-sys-color-surface-variant) !important;
-    color: var(--md-sys-color-on-surface-variant) !important;
+    border: 1px solid var(--md-sys-color-outline-variant) !important;
+    opacity: 1 !important;
   }
 
 }
@@ -824,19 +790,9 @@ button:active:not(:disabled) {
     gap: var(--md-spacing-2); /* Reduce gap on mobile */
   }
 
-  .send-fab {
-    width: 48px;
-    height: 48px;
-  }
-
-  .send-fab mat-icon {
-    font-size: var(--md-sys-typescale-title-medium-font-size);
-    width: 20px;
-    height: 20px;
-  }
-
-  .chat-input-field textarea {
-    font-size: var(--md-sys-typescale-body-medium-font-size);
+  .chat-input-container {
+    --fp-composer-font: var(--md-sys-typescale-body-medium-font-size);
+    --fp-composer-pad: 12px;
   }
 
   /* Typing indicator mobile adjustments */
@@ -861,3 +817,48 @@ button:active:not(:disabled) {
   }
 }
 
+
+/* Empty state: the model you are talking to is the headline. It fills the space
+   the thread will occupy, so an empty conversation reads as ready rather than barren. */
+.chat-empty {
+  min-height: 58vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--md-spacing-3);
+  padding: var(--md-spacing-6) var(--md-spacing-4);
+  text-align: center;
+}
+
+.chat-empty__mark {
+  width: 56px;
+  height: 56px;
+  font-size: 56px;
+  color: var(--md-sys-color-primary);
+  margin-bottom: var(--md-spacing-4);
+}
+
+.chat-empty__mark svg {
+  width: 56px;
+  height: 56px;
+}
+
+.chat-empty__title {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: clamp(1.75rem, 4.5vw, 2.75rem);
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--md-sys-color-on-surface);
+  overflow-wrap: anywhere;
+}
+
+.chat-empty__hint {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: clamp(0.9375rem, 1.8vw, 1.25rem);
+  font-weight: 400;
+  color: var(--md-sys-color-on-surface-variant);
+}

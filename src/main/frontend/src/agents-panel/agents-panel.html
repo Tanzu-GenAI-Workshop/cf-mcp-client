@@ -4,7 +4,7 @@
     <div class="panel-header">
       <h2 id="agents-panel-heading">Agents</h2>
       <button mat-icon-button (click)="toggleSidenav()" aria-label="Close agents panel">
-        <mat-icon aria-hidden="true">close</mat-icon>
+        <mat-icon aria-hidden="true" svgIcon="fp-close"></mat-icon>
       </button>
     </div>
 
@@ -21,7 +21,7 @@
               [class.status-error]="getOverallStatusClass() === 'status-red'"
               role="status"
               [attr.aria-label]="'Agent status: ' + getOverallStatusText()">
-              <mat-icon matChipAvatar aria-hidden="true">{{ getOverallStatusIcon() }}</mat-icon>
+              <mat-icon matChipAvatar aria-hidden="true" [svgIcon]="getOverallStatusIcon()"></mat-icon>
               {{ getOverallStatusText() }}
             </mat-chip>
           </mat-chip-set>
@@ -63,7 +63,7 @@
 
                   @if (!agent.healthy) {
                     <div class="error-message" role="alert">
-                      <mat-icon aria-hidden="true">error</mat-icon>
+                      <mat-icon aria-hidden="true" svgIcon="fp-offline"></mat-icon>
                       <span>{{agent.errorMessage}}</span>
                     </div>
                   }
@@ -75,7 +75,7 @@
                           [disabled]="!agent.healthy"
                           (click)="openAgentMessageDialog(agent)"
                           [attr.aria-label]="agent.healthy ? 'Send message to ' + agent.agentName : 'Cannot send message - agent is unhealthy'">
-                    <mat-icon aria-hidden="true">send</mat-icon>
+                    <mat-icon aria-hidden="true" svgIcon="fp-send"></mat-icon>
                     Send Message
                   </button>
                 </mat-card-actions>
@@ -88,7 +88,7 @@
 
     @if (sortedA2AAgents.length === 0) {
       <div class="empty-state" role="status" aria-label="No agents configured">
-        <mat-icon aria-hidden="true">info</mat-icon>
+        <mat-icon aria-hidden="true" svgIcon="fp-info"></mat-icon>
         <p>No A2A agents configured</p>
         <p class="empty-state-hint">Bind A2A services to enable agent interactions</p>
       </div>

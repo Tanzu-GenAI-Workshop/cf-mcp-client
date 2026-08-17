@@ -8,6 +8,7 @@
 @use './styles/responsive'; /* Responsive system - adaptive layouts */
 @import './styles/material-grid.css';
 @import './styles/m3-color-system.css';
+@import './styles/_faceplate.css'; /* Faceplate: Material bridge, pills, light type */
 
 html, body { height: 100%; }
 body {
@@ -23,6 +24,9 @@ body {
 .mat-mdc-dialog-surface {
   overflow-x: hidden !important;
 }
+
+/* Inline emphasis: keep it within the light weight scale */
+b, strong { font-weight: 500; }
 
 /* Custom dialog container for tools modal */
 .custom-dialog-container .mat-mdc-dialog-surface {
