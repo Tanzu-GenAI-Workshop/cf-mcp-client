@@ -24,6 +24,8 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.tanzu.mcpclient.mcp.McpDiscoveryService;
+import org.tanzu.mcpclient.mcp.McpClientFactory;
 
 import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
@@ -32,13 +34,13 @@ public class ChatService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
-    private final List<McpServerService> mcpServerServices;
-    private final McpToolCallbackCacheService toolCallbackCacheService;
-    private final ModelDiscoveryService modelDiscoveryService;
-    private final MessageChatMemoryAdvisor transientMemoryAdvisor;
-    private final VectorStoreChatMemoryAdvisor persistentMemoryAdvisor;
     private final MemoryPreferenceService memoryPreferenceService;
     private final MemoryConfiguration memoryConfiguration;
+    private final McpDiscoveryService mcpDiscoveryService;
+    private final McpClientFactory mcpClientFactory;
+    private final MessageChatMemoryAdvisor transientMemoryAdvisor;
+    private final VectorStoreChatMemoryAdvisor persistentMemoryAdvisor;
+    private final ModelDiscoveryService modelDiscoveryService;
 
     @Value("classpath:/prompts/system-prompt.st")
     private Resource systemChatPrompt;
@@ -54,10 +56,10 @@ public class ChatService {
                        VectorStoreChatMemoryAdvisor persistentMemoryAdvisor,
                        MemoryPreferenceService memoryPreferenceService,
                        MemoryConfiguration memoryConfiguration,
-                       List<McpServerService> mcpServerServices,
                        VectorStore vectorStore,
-                       McpToolCallbackCacheService toolCallbackCacheService,
-                       ModelDiscoveryService modelDiscoveryService) {
+                       ModelDiscoveryService modelDiscoveryService,
+                       McpDiscoveryService mcpDiscoveryService,
+                       McpClientFactory mcpClientFactory) {
         // Only add SimpleLoggerAdvisor as default - memory advisor will be added per request
         chatClientBuilder = chatClientBuilder.defaultAdvisors(new SimpleLoggerAdvisor());
         this.chatClient = chatClientBuilder.build();
@@ -66,10 +68,10 @@ public class ChatService {
         this.persistentMemoryAdvisor = persistentMemoryAdvisor;
         this.memoryPreferenceService = memoryPreferenceService;
         this.memoryConfiguration = memoryConfiguration;
-        this.mcpServerServices = mcpServerServices;
         this.vectorStore = vectorStore;
-        this.toolCallbackCacheService = toolCallbackCacheService;
         this.modelDiscoveryService = modelDiscoveryService;
+        this.mcpDiscoveryService = mcpDiscoveryService;
+        this.mcpClientFactory = mcpClientFactory;
     }
 
     /**
@@ -84,10 +86,16 @@ public class ChatService {
             return Flux.error(new IllegalStateException("No chat model configured"));
         }
 
-        // Get cached tool callback providers (no more client creation per request!)
-        ToolCallbackProvider[] toolCallbackProviders = toolCallbackCacheService.getToolCallbackProviders();
+        // Dynamically evaluate MCP bindings on each chat request
+        List<McpDiscoveryService.McpServiceConfiguration> serviceConfigs = mcpDiscoveryService.getMcpServicesWithProtocol();
+        List<McpServerService> dynamicMcpServices = serviceConfigs.stream()
+                .map(config -> new McpServerService(config.serviceName(), config.serverUrl(), config.protocol(), config.headerSupplier(), mcpClientFactory))
+                .collect(Collectors.toList());
+                
+        McpToolCallbackCacheService dynamicToolCache = new McpToolCallbackCacheService(dynamicMcpServices);
+        ToolCallbackProvider[] toolCallbackProviders = dynamicToolCache.getToolCallbackProviders();
 
-        logger.info("CHAT STREAM REQUEST: conversationID = {}, documentIds = {}, cached tools = {}",
+        logger.info("CHAT STREAM REQUEST: conversationID = {}, documentIds = {}, dynamically loaded tools = {}",
                 conversationId, documentIds, toolCallbackProviders.length);
 
         return buildAndExecuteStreamChatRequest(chat, conversationId, documentIds, toolCallbackProviders);
@@ -161,12 +169,6 @@ public class ChatService {
         return spec.stream().content();
     }
 
-    /**
-     * Get all configured MCP server services
-     */
-    public List<McpServerService> getMcpServerServices() {
-        return List.copyOf(mcpServerServices);
-    }
 
     /**
      * Builds a filter expression for multiple document IDs using OR logic.

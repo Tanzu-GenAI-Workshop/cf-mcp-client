@@ -60,8 +60,6 @@ public class A2AConfiguration {
 
         if (services.isEmpty()) {
             logger.info("No A2A agents configured");
-            // Publish empty configuration event
-            eventPublisher.publishEvent(new A2AConfigurationEvent(this, List.of()));
             return;
         }
 
@@ -96,9 +94,6 @@ public class A2AConfiguration {
         long healthyCount = agentServices.stream().filter(A2AAgentService::isHealthy).count();
         logger.info("A2A agent initialization complete: {}/{} agents healthy",
                 healthyCount, agentServices.size());
-
-        // Publish configuration event with agent services
-        eventPublisher.publishEvent(new A2AConfigurationEvent(this, List.copyOf(agentServices)));
     }
 
     /**

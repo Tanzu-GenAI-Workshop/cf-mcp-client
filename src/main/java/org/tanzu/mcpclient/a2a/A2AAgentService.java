@@ -57,6 +57,15 @@ public class A2AAgentService {
     }
 
     /**
+     * Checks the health of the agent by attempting to fetch its agent card.
+     * Updates the internal healthy state and returns it.
+     */
+    public boolean checkHealth() {
+        initializeAgentCard();
+        return healthy;
+    }
+
+    /**
      * Fetches the agent card from the URI and parses it.
      * Sets healthy status based on success/failure.
      */

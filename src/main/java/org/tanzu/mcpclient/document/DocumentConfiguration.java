@@ -30,14 +30,7 @@ public class DocumentConfiguration {
         this.eventPublisher = eventPublisher;
     }
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void publishConfigurationEvent() {
-        String embeddingModel = modelDiscoveryService.getEmbeddingModelName();
-        String vectorDatabase = vectorStore.getName();
-        logger.debug("Publishing DocumentConfigurationEvent: embeddingModel={}, vectorDatabase={}",
-                embeddingModel, vectorDatabase);
-        eventPublisher.publishEvent(new DocumentConfigurationEvent(this, embeddingModel, vectorDatabase));
-    }
+
 
     @Bean
     public MultipartConfigElement multipartConfigElement() {

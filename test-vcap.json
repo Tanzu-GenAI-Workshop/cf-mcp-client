@@ -1,0 +1,40 @@
+{
+  "user-provided": [
+    {
+      "binding_guid": "900e4cf3-8b10-4c58-8461-b78c3706e883",
+      "binding_name": null,
+      "credentials": {
+        "mcpServiceURL": "https://time-mcp-server.apps.tas.tanzu.rocks"
+      },
+      "instance_guid": "5497acba-3412-4418-a3ea-9caafc85646f",
+      "instance_name": "time-mcp-server",
+      "label": "user-provided",
+      "name": "time-mcp-server",
+      "syslog_drain_url": null,
+      "tags": [],
+      "volume_mounts": []
+    }
+  ],
+  "vcenter-mcp-server": [
+    {
+      "binding_guid": "34bd97f8-c2dd-4057-aa57-11815229ccd6",
+      "binding_name": null,
+      "credentials": {
+        "credhub-ref": "/c/tanzu-service-publisher/51dbade5-14d7-4d75-9424-e38c7ed8ee1c/bindings/34bd97f8-c2dd-4057-aa57-11815229ccd6/credentials"
+      },
+      "instance_guid": "51dbade5-14d7-4d75-9424-e38c7ed8ee1c",
+      "instance_name": "chat-vcenter-tool",
+      "label": "vcenter-mcp-server",
+      "name": "chat-vcenter-tool",
+      "plan": "standard",
+      "provider": null,
+      "syslog_drain_url": null,
+      "tags": [
+        "mcp",
+        "ai-tools",
+        "mcpSseURL"
+      ],
+      "volume_mounts": []
+    }
+  ]
+}

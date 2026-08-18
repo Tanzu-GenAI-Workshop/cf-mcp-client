@@ -33,7 +33,6 @@ public class McpDiscoveryService {
     public static final String TAG_MCP_STREAMABLE = "mcpStreamableURL";
     public static final String CREDENTIALS_URI_KEY = "uri";
 
-    private final CfEnv cfEnv;
     private final GenaiLocator genaiLocator; // Optional - may be null
 
     /**
@@ -42,7 +41,6 @@ public class McpDiscoveryService {
      * (i.e., when genai.locator.config-url property is set by CfGenaiProcessor).
      */
     public McpDiscoveryService(@Nullable GenaiLocator genaiLocator) {
-        this.cfEnv = new CfEnv();
         this.genaiLocator = genaiLocator;
 
         if (genaiLocator != null) {
@@ -76,9 +74,11 @@ public class McpDiscoveryService {
      */
     public List<String> getMcpServiceNames() {
         try {
-            return cfEnv.findAllServices().stream()
-                    .filter(this::hasMcpServiceUrl)
-                    .map(CfService::getName)
+            CfEnv currentCfEnv = new CfEnv();
+            return currentCfEnv.findAllServices().stream()
+                    .map(this::extractMcpServiceConfiguration)
+                    .filter(Objects::nonNull)
+                    .map(McpServiceConfiguration::serviceName)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.warn("Error getting MCP service names: {}", e.getMessage());
@@ -92,9 +92,11 @@ public class McpDiscoveryService {
      */
     public List<String> getMcpServiceUrls() {
         try {
-            return cfEnv.findAllServices().stream()
-                    .filter(this::hasMcpServiceUrl)
-                    .map(service -> service.getCredentials().getString(MCP_SERVICE_URL))
+            CfEnv currentCfEnv = new CfEnv();
+            return currentCfEnv.findAllServices().stream()
+                    .map(this::extractMcpServiceConfiguration)
+                    .filter(Objects::nonNull)
+                    .map(McpServiceConfiguration::serverUrl)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.warn("Error getting MCP service URLs: {}", e.getMessage());
@@ -137,7 +139,8 @@ public class McpDiscoveryService {
      */
     public List<McpServiceConfiguration> getMcpServicesWithProtocol() {
         try {
-            return cfEnv.findAllServices().stream()
+            CfEnv currentCfEnv = new CfEnv();
+            return currentCfEnv.findAllServices().stream()
                     .map(this::extractMcpServiceConfiguration)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -246,6 +249,20 @@ public class McpDiscoveryService {
                 logger.debug("Found legacy MCP service '{}' via credentials with mcpServiceURL",
                     service.getName());
                 return new McpServiceConfiguration(service.getName(), url, new ProtocolType.Legacy(), headerSupplier);
+            }
+        }
+
+        // Generic fallback for all VCAP services that might be MCP servers (e.g. from marketplace)
+        // without explicit tags or specialized credential keys
+        String label = service.getLabel() != null ? service.getLabel() : "";
+        if (service.getName().toLowerCase().contains("mcp") || label.toLowerCase().contains("mcp")) {
+            String uri = credentials.getString(CREDENTIALS_URI_KEY);
+            if (!isValidUrl(uri)) {
+                uri = credentials.getString("url");
+            }
+            if (isValidUrl(uri)) {
+                logger.info("Found generic MCP service by name/label '{}', uri: '{}'", service.getName(), uri);
+                return new McpServiceConfiguration(service.getName(), uri, new ProtocolType.SSE(), headerSupplier); // default to SSE
             }
         }
 
