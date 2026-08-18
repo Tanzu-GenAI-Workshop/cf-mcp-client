@@ -210,21 +210,6 @@
   }
 }
 
-/* Dark mode enhancements for better contrast */
-@media (prefers-color-scheme: dark) {
-  .nav-rail-label {
-    color: var(--md-sys-color-on-surface);
-  }
-
-  .nav-rail-icon {
-    color: var(--md-sys-color-on-surface);
-  }
-
-  .navigation-rail {
-    border-left-color: var(--md-sys-color-outline);
-  }
-}
-
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .navigation-rail {
@@ -324,7 +309,7 @@
 .nav-rail-button.active .nav-rail-icon,
 .nav-rail-button[aria-expanded="true"] .nav-rail-label,
 .nav-rail-button.active .nav-rail-label {
-  color: var(--md-sys-color-on-primary-container);
+  color: var(--md-sys-color-primary);
 }
 
 /* --- fixes: active fill, label clipping, badge size, wider column --- */
@@ -343,7 +328,7 @@
 
 .nav-rail-button.active .nav-rail-icon,
 .nav-rail-button.active .nav-rail-label {
-  color: var(--md-sys-color-on-primary-container);
+  color: var(--md-sys-color-primary);
 }
 
 /* descenders were being clipped: 'g' in Agents */
@@ -388,3 +373,113 @@
      unhighlighted gutter between neighbours */
   border-radius: 0;
 }
+
+/* --- pop: bolder labels, item dividers, pill-behind-icon (faceplate v2) --- */
+
+/* the current destination is a pill behind the icon, not a tinted row */
+.nav-rail-button.active,
+.nav-rail-button[aria-expanded="true"] {
+  background: transparent;
+}
+
+.nav-rail-icon {
+  padding: 6px 16px;
+  border-radius: 999px;
+  box-sizing: content-box;
+}
+
+.nav-rail-button.active .nav-rail-icon,
+.nav-rail-button[aria-expanded="true"] .nav-rail-icon {
+  background: var(--md-sys-color-primary-container);
+}
+
+/* a hairline between destinations instead of one continuous strip */
+.nav-rail-item + .nav-rail-item {
+  border-top: 1px solid var(--md-sys-color-outline-variant, var(--mat-sys-outline-variant));
+}
+
+.nav-rail-label {
+  font-weight: 500;
+}
+
+/* the badge is filled and haloed so it reads at a glance, not engraved */
+.nav-rail-state {
+  top: -10px;
+  right: -16px;
+  width: 30px;
+  height: 30px;
+}
+
+.nav-rail-state svg { width: 30px; height: 30px; }
+
+/* --- exact parity with the faceplate: six equal cells own the rail. The card's
+   height is derived from the cell size (see app.component.css), so stretching
+   to fill *is* square. Splitting flex 5:1 between the five destinations and the
+   sign-out footer keeps every cell identical, and dropping the footer's padding
+   removes the band the hover fill could never reach. --- */
+.nav-rail-container {
+  flex: 5;
+  padding: 0;
+  justify-content: stretch;
+  /* without this the container is floored at its content's min height and
+     steals the difference from the footer, so the sign-out cell comes out short */
+  min-height: 0;
+}
+
+.nav-rail-footer {
+  flex: 1;
+  padding: 0;
+  min-height: 0;
+}
+
+.nav-rail-item {
+  flex: 1;
+  min-height: 0;
+}
+
+.nav-rail-button {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;  /* padding must not add to the 100% height, or each cell overflows its slot */
+  box-sizing: border-box;
+}
+
+/* hover is the faceplate's flat sunken fill across the whole cell, not a
+   translucent state layer floating inside it */
+.nav-rail-button:hover {
+  background: var(--md-sys-color-surface-variant);
+}
+
+.nav-rail-button:hover::before {
+  opacity: 0;
+}
+
+/* the badge sits in the cell's own top-right corner (faceplate geometry)
+   instead of hanging off the glyph, so there is nothing to clip */
+.nav-rail-button-content {
+  position: static;
+}
+
+.nav-rail-state {
+  top: 6px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+}
+
+/* the faceplate's current destination is the pill and the green label only —
+   no tinted row behind it, so the Material selected state layer comes off */
+.nav-rail-button.active::before,
+.nav-rail-button[aria-expanded="true"]::before {
+  opacity: 0;
+}
+
+.nav-rail-button:hover .nav-rail-icon,
+.nav-rail-button:hover .nav-rail-label {
+  color: var(--md-sys-color-on-surface);
+}
+
+/* mat-icon defaults to overflow:hidden, which slices the badge's halo stroke
+   where it sits proud of the 24-unit box */
+.nav-rail-state { overflow: visible; }

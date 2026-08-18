@@ -295,10 +295,8 @@
 }
 
 /* Dark mode specific adjustments */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --md-sys-state-hover-opacity: 0.08;
-    --md-sys-state-focus-opacity: 0.10;
-    --md-sys-state-pressed-opacity: 0.10;
-  }
+:root[data-theme="dark"] {
+  --md-sys-state-hover-opacity: 0.08;
+  --md-sys-state-focus-opacity: 0.10;
+  --md-sys-state-pressed-opacity: 0.10;
 }

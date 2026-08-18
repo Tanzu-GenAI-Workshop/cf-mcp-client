@@ -247,11 +247,9 @@
               -2px 0 0 0 var(--md-sys-color-outline-variant);
 }
 
-@media (prefers-color-scheme: dark) {
-  .mat-drawer.mat-drawer-end {
-    box-shadow: -18px 0 56px -10px rgba(0, 0, 0, 0.78),
-                -2px 0 0 0 var(--md-sys-color-outline-variant);
-  }
+[data-theme="dark"] .mat-drawer.mat-drawer-end {
+  box-shadow: -18px 0 56px -10px rgba(0, 0, 0, 0.78),
+              -2px 0 0 0 var(--md-sys-color-outline-variant);
 }
 
 /* ===== PANELS =====

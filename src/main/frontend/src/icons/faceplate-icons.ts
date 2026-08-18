@@ -22,6 +22,13 @@ const svg = (body: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" ` +
   `stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 
+// Filled + haloed variants for a badge riding on top of a control (nav rail /
+// bottom bar), as opposed to the outline glyphs above drawn at text weight
+// inside a label pill. Halo and knockout both use the surface token so one
+// variable self-inverts between light and dark. It is the *container* tone
+// because that is what the rail and bottom bar are painted with.
+const badge = (body: string) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${body}</svg>`;
+
 export const FACEPLATE_ICONS: Record<string, string> = {
   // — navigation ————————————————————————————————————————————————
   'fp-chat': svg(`<rect x="3" y="4" width="18" height="12" rx="3"/><path d="M8 16v4l3.8-4"/>
@@ -63,6 +70,24 @@ export const FACEPLATE_ICONS: Record<string, string> = {
     <circle cx="12" cy="16.8" r="1" fill="currentColor" stroke="none"/>`),
 
   'fp-offline': svg(`<path d="M12 2.9 21.1 12 12 21.1 2.9 12z"/><path d="M9.2 14.8 14.8 9.2"/>`),
+
+  'fp-badge-ready': badge(`<circle cx="12" cy="12" r="10" fill="currentColor" stroke="var(--md-sys-color-surface-container)" stroke-width="3" paint-order="stroke"/>
+    <path d="M7.5 12.3l3 3 6-6.6" fill="none" stroke="var(--md-sys-color-surface-container)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`),
+
+  'fp-badge-attention': badge(`<path d="M12 2.2 22.6 21.2H1.4z" fill="currentColor" stroke="var(--md-sys-color-surface-container)" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
+    <path d="M12 9.6v4.4" fill="none" stroke="var(--md-sys-color-surface-container)" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="12" cy="17.6" r="1.35" fill="var(--md-sys-color-surface-container)"/>`),
+
+  'fp-badge-offline': badge(`<path d="M12 1.6 22.4 12 12 22.4 1.6 12z" fill="currentColor" stroke="var(--md-sys-color-surface-container)" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/>
+    <path d="M9.5 14.5 14.5 9.5" fill="none" stroke="var(--md-sys-color-surface-container)" stroke-width="2.2" stroke-linecap="round"/>`),
+
+  // — theme ————————————————————————————————————————————————
+  'fp-sun': svg(`<circle cx="12" cy="12" r="4.2"/>
+    <path d="M12 2.6v2.4M12 19v2.4M5.05 5.05l1.7 1.7M17.25 17.25l1.7 1.7M2.6 12h2.4M19 12h2.4M5.05 18.95l1.7-1.7M17.25 6.75l1.7-1.7"/>`),
+
+  'fp-moon': svg(`<path d="M20.6 14.6A8.8 8.8 0 0 1 9.4 3.4a8.8 8.8 0 1 0 11.2 11.2z"/>
+    <circle cx="15.6" cy="17.2" r="0.85" fill="currentColor" stroke="none"/>
+    <circle cx="11.2" cy="14.6" r="0.7" fill="currentColor" stroke="none"/>`),
 
   // — actions ————————————————————————————————————————————————
   'fp-send': svg(`<path d="M20.8 3.4 3.6 10.3l6.5 2.7 2.7 6.5z"/><path d="M20.8 3.4 10.1 13"/><path d="M2.6 17.6 5 15.2"/>`),

@@ -50,7 +50,7 @@
   outline: none;
 
   /* State layer container */
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* ===== MATERIAL DESIGN 3 STATE LAYERS ===== */
@@ -208,18 +208,6 @@
 
 /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
 
-/* Dark mode enhancements */
-@media (prefers-color-scheme: dark) {
-  .bottom-nav-label,
-  .bottom-nav-icon {
-    color: var(--md-sys-color-on-surface);
-  }
-
-  .bottom-navigation {
-    border-top-color: var(--md-sys-color-outline);
-  }
-}
-
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .bottom-navigation {
@@ -292,7 +280,7 @@
 
 .bottom-nav-button.active .bottom-nav-icon,
 .bottom-nav-button.active .bottom-nav-label {
-  color: var(--md-sys-color-on-primary-container);
+  color: var(--md-sys-color-primary);
 }
 
 .bottom-nav-icon {
@@ -336,3 +324,118 @@
   height: 100%;
   min-height: 0;
 }
+
+/* --- pop: bolder labels, item dividers, pill-behind-icon (faceplate v2) --- */
+
+.bottom-nav-button.active,
+.bottom-nav-button[aria-expanded="true"] {
+  background: transparent;
+}
+
+.bottom-nav-icon {
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-sizing: content-box;
+}
+
+.bottom-nav-button.active .bottom-nav-icon,
+.bottom-nav-button[aria-expanded="true"] .bottom-nav-icon {
+  background: var(--md-sys-color-primary-container);
+}
+
+.bottom-nav-item + .bottom-nav-item {
+  border-left: 1px solid var(--md-sys-color-outline-variant, var(--mat-sys-outline-variant));
+}
+
+.bottom-nav-label {
+  font-weight: 500;
+}
+
+.bottom-nav-state {
+  top: -9px;
+  right: -14px;
+  width: 24px;
+  height: 24px;
+}
+
+.bottom-nav-state svg { width: 24px; height: 24px; }
+
+/* --- faceplate parity: six square cells, badge inside the cell, flat hover ---
+   app.component.css sets --md-bottom-nav-height to the card width / 6, so the
+   bar is exactly one cell tall and every cell comes out square. The geometry
+   below is sized to fit that cell on a narrow phone without overflowing. */
+.bottom-nav-item {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+}
+
+.bottom-nav-button {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 2px;  /* padding must not add to the 100% height, or each cell overflows its slot */
+  box-sizing: border-box;
+}
+
+/* hover is the faceplate's flat sunken fill across the whole cell */
+.bottom-nav-button:hover {
+  background: var(--md-sys-color-surface-variant);
+}
+
+.bottom-nav-button:hover::before {
+  opacity: 0;
+}
+
+.bottom-nav-button-content {
+  position: static;
+  gap: 3px;
+}
+
+.bottom-nav-icon {
+  width: 28px;
+  height: 28px;
+  font-size: 28px;
+  padding: 2px 10px;
+}
+
+.bottom-nav-icon svg { width: 28px; height: 28px; }
+
+/* the label has to fit a cell that is one sixth of the card's width, so it
+   scales with the viewport instead of colliding with its neighbour on a
+   narrow phone */
+.bottom-nav-label {
+  font-size: clamp(0.62rem, 2.4vw, 0.85rem);
+  line-height: 1.2;
+  padding-bottom: 0;
+}
+
+/* the badge sits in the cell's own top-right corner, not hanging off the glyph */
+.bottom-nav-state {
+  top: -2px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+}
+
+.bottom-nav-state svg { width: 22px; height: 22px; }
+
+/* same as the rail: the pill and the green label carry the current
+   destination, with no tinted cell behind them */
+.bottom-nav-button.active::before,
+.bottom-nav-button[aria-expanded="true"]::before {
+  opacity: 0;
+}
+
+.bottom-nav-button:hover .bottom-nav-icon,
+.bottom-nav-button:hover .bottom-nav-label {
+  color: var(--md-sys-color-on-surface);
+}
+
+/* mat-icon defaults to overflow:hidden, which slices the badge's halo stroke
+   where it sits proud of the 24-unit box */
+.bottom-nav-state { overflow: visible; }
+
+/* keep the badge clear of the bar's top hairline */
+.bottom-nav-state { top: 3px; right: 3px; }

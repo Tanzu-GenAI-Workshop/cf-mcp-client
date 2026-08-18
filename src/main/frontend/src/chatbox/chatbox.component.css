@@ -116,7 +116,7 @@
   white-space: pre-line;
   font-size: var(--md-sys-typescale-body-large-font-size);
   line-height: var(--md-sys-typescale-body-large-line-height);
-  color: var(--md-sys-color-on-primary-container);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .chat-message.bot {
@@ -138,11 +138,12 @@
   transition: box-shadow var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
 }
 
-/* User message cards - implement MD3 FILLED variant */
+/* User message cards - faceplate: sunken neutral, not an accent tint, so the
+   user's own words don't compete in colour with the ready/agent hue. */
 .md3-chat-card[data-card-variant="user"] {
-  background-color: var(--md-sys-color-primary-container) !important;
-  border: none !important; /* Remove outlined border for filled variant */
-  box-shadow: none; /* Filled cards use 0dp elevation per MD3 spec */
+  background-color: var(--md-sys-color-surface-variant) !important;
+  border: 1px solid var(--md-sys-color-outline-variant) !important;
+  box-shadow: none;
 }
 
 /* Bot message cards - implement MD3 ELEVATED variant */
@@ -261,17 +262,17 @@
 
 /* User message card state layers */
 .chat-message:hover .md3-chat-card[data-card-variant="user"]::before {
-  background-color: var(--md-sys-color-on-primary-container);
+  background-color: var(--md-sys-color-on-surface-variant);
   opacity: var(--md-sys-state-hover-opacity);
 }
 
 .chat-message .md3-chat-card[data-card-variant="user"]:focus-visible::before {
-  background-color: var(--md-sys-color-on-primary-container);
+  background-color: var(--md-sys-color-on-surface-variant);
   opacity: var(--md-sys-state-focus-opacity);
 }
 
 .chat-message .md3-chat-card[data-card-variant="user"]:active::before {
-  background-color: var(--md-sys-color-on-primary-container);
+  background-color: var(--md-sys-color-on-surface-variant);
   opacity: var(--md-sys-state-pressed-opacity);
 }
 
@@ -520,15 +521,13 @@ button:active:not(:disabled) {
 }
 
 /* Dark mode adjustments for better visibility */
-@media (prefers-color-scheme: dark) {
-  .typing-indicator {
-    background-color: var(--md-sys-color-surface-container-high);
-    box-shadow: var(--md-sys-elevation-2dp);
-  }
+:host-context([data-theme="dark"]) .typing-indicator {
+  background-color: var(--md-sys-color-surface-container-high);
+  box-shadow: var(--md-sys-elevation-2dp);
+}
 
-  .typing-dot {
-    background-color: var(--md-sys-color-primary);
-  }
+:host-context([data-theme="dark"]) .typing-dot {
+  background-color: var(--md-sys-color-primary);
 }
 
 /* Respect reduced motion preferences for accessibility */
@@ -698,49 +697,48 @@ button:active:not(:disabled) {
 /* Custom animations moved to _motion.scss for system-wide consistency */
 
 /* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :host {
-    --reasoning-bg: rgba(var(--mat-sys-primary-rgb), 0.08);
-    --error-bg: rgba(var(--mat-sys-error-rgb), 0.08);
-  }
+:host-context([data-theme="dark"]) {
+  --reasoning-bg: rgba(var(--mat-sys-primary-rgb), 0.08);
+  --error-bg: rgba(var(--mat-sys-error-rgb), 0.08);
+}
 
-  .reasoning-expansion-panel,
-  .error-expansion-panel {
-    box-shadow: var(--md-sys-elevation-8dp);
-  }
+:host-context([data-theme="dark"]) .reasoning-expansion-panel,
+:host-context([data-theme="dark"]) .error-expansion-panel {
+  box-shadow: var(--md-sys-elevation-8dp);
+}
 
-  .main-content markdown code,
-  .reasoning-content markdown code,
-  .main-content markdown pre,
-  .reasoning-content markdown pre {
-    background: rgba(255, 255, 255, 0.1);
-  }
+:host-context([data-theme="dark"]) .main-content markdown code,
+:host-context([data-theme="dark"]) .reasoning-content markdown code,
+:host-context([data-theme="dark"]) .main-content markdown pre,
+:host-context([data-theme="dark"]) .reasoning-content markdown pre {
+  background: rgba(255, 255, 255, 0.1);
+}
 
-  .chat-input {
-    color: var(--md-sys-color-on-surface) !important;
-    opacity: 1 !important;
-  }
+:host-context([data-theme="dark"]) .chat-input {
+  color: var(--md-sys-color-on-surface) !important;
+  opacity: 1 !important;
+}
 
-  /* Better placeholder text visibility */
-  .chat-input::placeholder {
-    color: var(--md-sys-color-on-surface-variant) !important;
-    opacity: 1 !important;
-  }
+/* Better placeholder text visibility */
 
-  /* Enhanced Send button visibility */
-  .chatbox-footer button[mat-flat-button] {
-    background-color: var(--md-sys-color-primary) !important;
-    color: var(--md-sys-color-on-primary) !important;
-    font-weight: 500 !important;
-  }
+:host-context([data-theme="dark"]) .chat-input::placeholder {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  opacity: 1 !important;
+}
 
-  .chatbox-footer button[mat-flat-button]:disabled {
-    background-color: var(--md-sys-color-surface-container-high) !important;
-    color: var(--md-sys-color-on-surface-variant) !important;
-    border: 1px solid var(--md-sys-color-outline-variant) !important;
-    opacity: 1 !important;
-  }
+/* Enhanced Send button visibility */
 
+:host-context([data-theme="dark"]) .chatbox-footer button[mat-flat-button] {
+  background-color: var(--md-sys-color-primary) !important;
+  color: var(--md-sys-color-on-primary) !important;
+  font-weight: 500 !important;
+}
+
+:host-context([data-theme="dark"]) .chatbox-footer button[mat-flat-button]:disabled {
+  background-color: var(--md-sys-color-surface-container-high) !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
+  border: 1px solid var(--md-sys-color-outline-variant) !important;
+  opacity: 1 !important;
 }
 
 /* Responsive Design using Material Design 3 breakpoints */
@@ -823,7 +821,10 @@ button:active:not(:disabled) {
 /* Empty state: the model you are talking to is the headline. It fills the space
    the thread will occupy, so an empty conversation reads as ready rather than barren. */
 .chat-empty {
-  min-height: 58vh;
+  /* fills the thread's own scroll area — a vh here would overflow the card,
+     which no longer spans the viewport */
+  min-height: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;

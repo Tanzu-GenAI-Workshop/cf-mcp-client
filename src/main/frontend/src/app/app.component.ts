@@ -1,6 +1,7 @@
 import { Component, inject, signal, effect, ViewChild } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MemoryPanelComponent } from '../memory-panel/memory-panel.component';
 import { DocumentPanelComponent } from '../document-panel/document-panel.component';
@@ -19,7 +20,7 @@ import { startWith, switchMap, retry, shareReplay, catchError, of } from 'rxjs';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MatToolbar, MatIconModule, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, AgentsPanel, ChatboxComponent, NavigationRailComponent, BottomNavigationComponent],
+  imports: [MatToolbar, MatIconModule, MatTooltipModule, ChatPanelComponent, MemoryPanelComponent, DocumentPanelComponent, McpServersPanelComponent, AgentsPanel, ChatboxComponent, NavigationRailComponent, BottomNavigationComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -40,6 +41,19 @@ export class AppComponent {
 
   private readonly httpClient = inject(HttpClient);
   private readonly document = inject(DOCUMENT);
+
+  /** Mirrors <html data-theme>, which index.html resolves before first paint. */
+  readonly theme = signal<'light' | 'dark'>(
+    (this.document.documentElement.dataset['theme'] as 'light' | 'dark') ?? 'dark'
+  );
+
+  toggleTheme(): void {
+    const next = this.theme() === 'dark' ? 'light' : 'dark';
+    this.theme.set(next);
+    this.document.documentElement.dataset['theme'] = next;
+    this.document.documentElement.style.colorScheme = next;
+    try { localStorage.setItem('tpc-theme', next); } catch { /* private mode */ }
+  }
 
   // Reactive metrics polling using RxJS interop (zoneless-friendly pattern)
   private readonly metricsPolling$ = interval(5000).pipe(

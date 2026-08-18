@@ -14,7 +14,7 @@
 
 :root {
   /* ===== PRIMARY COLOR ROLES ===== */
-  --md-sys-color-primary: #0B6B57;
+  --md-sys-color-primary: #00806A;
   --md-sys-color-on-primary: #ffffff;
   --md-sys-color-primary-container: #D7EDE5;
   --md-sys-color-on-primary-container: #06392E;
@@ -26,16 +26,24 @@
   --md-sys-color-on-secondary-container: #12291F;
 
   /* ===== TERTIARY COLOR ROLES ===== */
-  --md-sys-color-tertiary: #0B6B57;
+  --md-sys-color-tertiary: #00806A;
   --md-sys-color-on-tertiary: #ffffff;
   --md-sys-color-tertiary-container: #D7EDE5;
   --md-sys-color-on-tertiary-container: #06392E;
 
   /* ===== ERROR COLOR ROLES ===== */
-  --md-sys-color-error: #5A32A3;
+  --md-sys-color-error: #6B3FD4;
   --md-sys-color-on-error: #ffffff;
   --md-sys-color-error-container: #E7E0FA;
   --md-sys-color-on-error-container: #351D63;
+
+  /* ===== GRAPHIC TONES =====
+     Badges and glyphs are non-text components: WCAG asks 3:1 of them, not the
+     4.5:1 the tones above are held to. Spending that headroom on chroma is what
+     keeps the light theme from reading as three shades of near-black. */
+  --md-sys-color-ready-icon: #00917A;
+  --md-sys-color-warning-icon: #B06E00;
+  --md-sys-color-error-icon: #7A4EE8;
 
   /* ===== NEUTRAL COLOR ROLES ===== */
   --md-sys-color-outline: #69736D;
@@ -44,21 +52,21 @@
   --md-sys-color-scrim: #000000;
 
   /* ===== SURFACE COLOR ROLES ===== */
-  --md-sys-color-surface: #F5F8F6;
+  --md-sys-color-surface: #F2F7F4;
   --md-sys-color-on-surface: #121A17;
-  --md-sys-color-surface-variant: #EAF0EC;
-  --md-sys-color-on-surface-variant: #47524C;
+  --md-sys-color-surface-variant: #E3EDE7;
+  --md-sys-color-on-surface-variant: #3D5A50;
 
   /* ===== SURFACE TINT SYSTEM ===== */
   --md-sys-color-surface-tint: var(--md-sys-color-primary);
   
   /* Surface containers with proper tint mixing */
-  --md-sys-color-surface-dim: #E4EBE6;
+  --md-sys-color-surface-dim: #E1EBE5;
   --md-sys-color-surface-bright: #FFFFFF;
   --md-sys-color-surface-container-lowest: #FFFFFF;
   --md-sys-color-surface-container-low: #FAFCFA;
-  --md-sys-color-surface-container: #F0F4F1;
-  --md-sys-color-surface-container-high: #EAF0EC;
+  --md-sys-color-surface-container: #FFFFFF;
+  --md-sys-color-surface-container-high: #E3EDE7;
   --md-sys-color-surface-container-highest: #E4EBE6;
 
   /* ===== INVERSE COLOR ROLES ===== */
@@ -74,7 +82,7 @@
   --md-sys-color-on-success-container: var(--md-sys-color-on-tertiary-container);
 
   /* Warning colors - using amber tones */
-  --md-sys-color-warning: #7A4A05;
+  --md-sys-color-warning: #9A5B00;
   --md-sys-color-on-warning: #ffffff;
   --md-sys-color-warning-container: #F8E7C8;
   --md-sys-color-on-warning-container: #4A2D00;
@@ -103,9 +111,9 @@
 
   /* ===== COMPONENT-SPECIFIC SEMANTIC TOKENS ===== */
   /* Chat status indicators */
-  --md-sys-color-chat-connected: var(--md-sys-color-success);
-  --md-sys-color-chat-disconnected: var(--md-sys-color-error);
-  --md-sys-color-chat-pending: var(--md-sys-color-warning);
+  --md-sys-color-chat-connected: var(--md-sys-color-ready-icon);
+  --md-sys-color-chat-disconnected: var(--md-sys-color-error-icon);
+  --md-sys-color-chat-pending: var(--md-sys-color-warning-icon);
 
   /* Document status indicators */
   --md-sys-color-document-uploaded: var(--md-sys-color-success);
@@ -123,7 +131,7 @@
 
   /* ===== RGB VALUES FOR RGBA USAGE ===== */
   /* Primary colors */
-  --md-sys-color-primary-rgb: 11, 107, 87;
+  --md-sys-color-primary-rgb: 0, 128, 106;
   --md-sys-color-on-primary-rgb: 255, 255, 255;
   --md-sys-color-primary-container-rgb: 215, 237, 229;
   --md-sys-color-on-primary-container-rgb: 6, 57, 46;
@@ -135,22 +143,22 @@
   --md-sys-color-on-secondary-container-rgb: 18, 41, 31;
 
   /* Tertiary colors */
-  --md-sys-color-tertiary-rgb: 11, 107, 87;
+  --md-sys-color-tertiary-rgb: 0, 128, 106;
   --md-sys-color-on-tertiary-rgb: 255, 255, 255;
   --md-sys-color-tertiary-container-rgb: 215, 237, 229;
   --md-sys-color-on-tertiary-container-rgb: 6, 57, 46;
 
   /* Error colors */
-  --md-sys-color-error-rgb: 90, 50, 163;
+  --md-sys-color-error-rgb: 107, 63, 212;
   --md-sys-color-on-error-rgb: 255, 255, 255;
   --md-sys-color-error-container-rgb: 231, 224, 250;
   --md-sys-color-on-error-container-rgb: 53, 29, 99;
 
   /* Surface colors */
-  --md-sys-color-surface-rgb: 245, 248, 246;
+  --md-sys-color-surface-rgb: 242, 247, 244;
   --md-sys-color-on-surface-rgb: 18, 26, 23;
-  --md-sys-color-surface-variant-rgb: 234, 240, 236;
-  --md-sys-color-on-surface-variant-rgb: 71, 82, 76;
+  --md-sys-color-surface-variant-rgb: 227, 237, 231;
+  --md-sys-color-on-surface-variant-rgb: 61, 90, 80;
 
   /* Neutral colors */
   --md-sys-color-outline-rgb: 105, 115, 109;
@@ -159,140 +167,144 @@
   --md-sys-color-scrim-rgb: 0, 0, 0;
 
   /* Semantic color RGB values */
-  --md-sys-color-success-rgb: 11, 107, 87;
-  --md-sys-color-warning-rgb: 122, 74, 5;
+  --md-sys-color-success-rgb: 0, 128, 106;
+  --md-sys-color-warning-rgb: 154, 91, 0;
   --md-sys-color-info-rgb: 11, 107, 87;
 }
 
 /* ===== DARK THEME ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* ===== PRIMARY COLOR ROLES (DARK) ===== */
-    --md-sys-color-primary: #5EC9A8;
-    --md-sys-color-on-primary: #0D1311;
-    --md-sys-color-primary-container: #12332B;
-    --md-sys-color-on-primary-container: #A9E7D3;
+:root[data-theme="dark"] {
+  /* ===== PRIMARY COLOR ROLES (DARK) ===== */
+  --md-sys-color-primary: #5EC9A8;
+  --md-sys-color-on-primary: #0D1311;
+  --md-sys-color-primary-container: #12332B;
+  --md-sys-color-on-primary-container: #A9E7D3;
 
-    /* ===== SECONDARY COLOR ROLES (DARK) ===== */
-    --md-sys-color-secondary: #A9BEB4;
-    --md-sys-color-on-secondary: #16261F;
-    --md-sys-color-secondary-container: #2A3D35;
-    --md-sys-color-on-secondary-container: #C8DDD4;
+  /* ===== SECONDARY COLOR ROLES (DARK) ===== */
+  --md-sys-color-secondary: #A9BEB4;
+  --md-sys-color-on-secondary: #16261F;
+  --md-sys-color-secondary-container: #2A3D35;
+  --md-sys-color-on-secondary-container: #C8DDD4;
 
-    /* ===== TERTIARY COLOR ROLES (DARK) ===== */
-    --md-sys-color-tertiary: #5EC9A8;
-    --md-sys-color-on-tertiary: #0D1311;
-    --md-sys-color-tertiary-container: #12332B;
-    --md-sys-color-on-tertiary-container: #A9E7D3;
+  /* ===== TERTIARY COLOR ROLES (DARK) ===== */
+  --md-sys-color-tertiary: #5EC9A8;
+  --md-sys-color-on-tertiary: #0D1311;
+  --md-sys-color-tertiary-container: #12332B;
+  --md-sys-color-on-tertiary-container: #A9E7D3;
 
-    /* ===== ERROR COLOR ROLES (DARK) ===== */
-    --md-sys-color-error: #B39CF5;
-    --md-sys-color-on-error: #1E1233;
-    --md-sys-color-error-container: #241E3D;
-    --md-sys-color-on-error-container: #DCD1FB;
+  /* ===== ERROR COLOR ROLES (DARK) ===== */
+  --md-sys-color-error: #B39CF5;
+  --md-sys-color-on-error: #1E1233;
+  --md-sys-color-error-container: #241E3D;
+  --md-sys-color-on-error-container: #DCD1FB;
 
-    /* ===== NEUTRAL COLOR ROLES (DARK) ===== */
-    --md-sys-color-outline: #7C8983;
-    --md-sys-color-outline-variant: #27322D;
-    --md-sys-color-shadow: #000000;
-    --md-sys-color-scrim: #000000;
+  /* Dark already sits brighter than its background, so a graphic needs no
+     separate tone — it is the signal hue itself. */
+  --md-sys-color-ready-icon: var(--md-sys-color-tertiary);
+  --md-sys-color-warning-icon: var(--md-sys-color-warning);
+  --md-sys-color-error-icon: var(--md-sys-color-error);
 
-    /* ===== SURFACE COLOR ROLES (DARK) ===== */
-    --md-sys-color-surface: #0D1311;
-    --md-sys-color-on-surface: #E7EEEA;
-    --md-sys-color-surface-variant: #101715;
-    --md-sys-color-on-surface-variant: #A7B4AD;
+  /* ===== NEUTRAL COLOR ROLES (DARK) ===== */
+  --md-sys-color-outline: #7C8983;
+  --md-sys-color-outline-variant: #27322D;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
 
-    /* ===== SURFACE TINT SYSTEM (DARK) ===== */
-    --md-sys-color-surface-tint: var(--md-sys-color-primary);
-    
-    /* Surface containers with proper tint mixing */
-    --md-sys-color-surface-dim: #0A0F0D;
-    --md-sys-color-surface-bright: #28322E;
-    --md-sys-color-surface-container-lowest: #080C0A;
-    --md-sys-color-surface-container-low: #111917;
-    --md-sys-color-surface-container: #141C19;
-    --md-sys-color-surface-container-high: #1A2320;
-    --md-sys-color-surface-container-highest: #202A26;
+  /* ===== SURFACE COLOR ROLES (DARK) ===== */
+  --md-sys-color-surface: #0D1311;
+  --md-sys-color-on-surface: #E7EEEA;
+  --md-sys-color-surface-variant: #101715;
+  --md-sys-color-on-surface-variant: #A7B4AD;
 
-    /* ===== INVERSE COLOR ROLES (DARK) ===== */
-    --md-sys-color-inverse-surface: #E7EEEA;
-    --md-sys-color-inverse-on-surface: #141C19;
-    --md-sys-color-inverse-primary: #0B6B57;
+  /* ===== SURFACE TINT SYSTEM (DARK) ===== */
+  --md-sys-color-surface-tint: var(--md-sys-color-primary);
+  
+  /* Surface containers with proper tint mixing */
+  --md-sys-color-surface-dim: #0A0F0D;
+  --md-sys-color-surface-bright: #28322E;
+  --md-sys-color-surface-container-lowest: #080C0A;
+  --md-sys-color-surface-container-low: #111917;
+  --md-sys-color-surface-container: #141C19;
+  --md-sys-color-surface-container-high: #1A2320;
+  --md-sys-color-surface-container-highest: #202A26;
 
-    /* ===== SEMANTIC COLOR TOKENS (DARK) ===== */
-    /* Success colors - using primary green tones */
-    --md-sys-color-success: var(--md-sys-color-tertiary);
-    --md-sys-color-on-success: var(--md-sys-color-on-tertiary);
-    --md-sys-color-success-container: var(--md-sys-color-tertiary-container);
-    --md-sys-color-on-success-container: var(--md-sys-color-on-tertiary-container);
+  /* ===== INVERSE COLOR ROLES (DARK) ===== */
+  --md-sys-color-inverse-surface: #E7EEEA;
+  --md-sys-color-inverse-on-surface: #141C19;
+  --md-sys-color-inverse-primary: #0B6B57;
 
-    /* Warning colors - using amber tones */
-    --md-sys-color-warning: #E0A64B;
-    --md-sys-color-on-warning: #2A1F06;
-    --md-sys-color-warning-container: #33280F;
-    --md-sys-color-on-warning-container: #F5D9A8;
+  /* ===== SEMANTIC COLOR TOKENS (DARK) ===== */
+  /* Success colors - using primary green tones */
+  --md-sys-color-success: var(--md-sys-color-tertiary);
+  --md-sys-color-on-success: var(--md-sys-color-on-tertiary);
+  --md-sys-color-success-container: var(--md-sys-color-tertiary-container);
+  --md-sys-color-on-success-container: var(--md-sys-color-on-tertiary-container);
 
-    /* Info colors - using blue tones */
-    --md-sys-color-info: #5EC9A8;
-    --md-sys-color-on-info: #0D1311;
-    --md-sys-color-info-container: #12332B;
-    --md-sys-color-on-info-container: #A9E7D3;
+  /* Warning colors - using amber tones */
+  --md-sys-color-warning: #E0A64B;
+  --md-sys-color-on-warning: #2A1F06;
+  --md-sys-color-warning-container: #33280F;
+  --md-sys-color-on-warning-container: #F5D9A8;
 
-    /* ===== ELEVATION COLORS (DARK - deprecated - use _surface-elevation.scss) ===== */
-    /* Legacy elevation shadows for backwards compatibility */
-    --md-sys-elevation-shadow-0dp: transparent;
-    --md-sys-elevation-shadow-1dp: rgba(0, 0, 0, 0.15);
-    --md-sys-elevation-shadow-3dp: rgba(0, 0, 0, 0.24);
-    --md-sys-elevation-shadow-6dp: rgba(0, 0, 0, 0.32);
-    --md-sys-elevation-shadow-8dp: rgba(0, 0, 0, 0.36);
-    --md-sys-elevation-shadow-12dp: rgba(0, 0, 0, 0.48);
+  /* Info colors - using blue tones */
+  --md-sys-color-info: #5EC9A8;
+  --md-sys-color-on-info: #0D1311;
+  --md-sys-color-info-container: #12332B;
+  --md-sys-color-on-info-container: #A9E7D3;
 
-    /* ===== COMPONENT-SPECIFIC SEMANTIC TOKENS (DARK) ===== */
-    /* Reasoning/Error content backgrounds */
-    --md-sys-color-reasoning-background: rgba(var(--md-sys-color-primary-rgb), 0.08);
-    --md-sys-color-error-background: rgba(var(--md-sys-color-error-rgb), 0.08);
+  /* ===== ELEVATION COLORS (DARK - deprecated - use _surface-elevation.scss) ===== */
+  /* Legacy elevation shadows for backwards compatibility */
+  --md-sys-elevation-shadow-0dp: transparent;
+  --md-sys-elevation-shadow-1dp: rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-shadow-3dp: rgba(0, 0, 0, 0.24);
+  --md-sys-elevation-shadow-6dp: rgba(0, 0, 0, 0.32);
+  --md-sys-elevation-shadow-8dp: rgba(0, 0, 0, 0.36);
+  --md-sys-elevation-shadow-12dp: rgba(0, 0, 0, 0.48);
 
-    /* ===== RGB VALUES FOR RGBA USAGE (DARK) ===== */
-    /* Primary colors */
-    --md-sys-color-primary-rgb: 94, 201, 168;
-    --md-sys-color-on-primary-rgb: 13, 19, 17;
-    --md-sys-color-primary-container-rgb: 18, 51, 43;
-    --md-sys-color-on-primary-container-rgb: 169, 231, 211;
+  /* ===== COMPONENT-SPECIFIC SEMANTIC TOKENS (DARK) ===== */
+  /* Reasoning/Error content backgrounds */
+  --md-sys-color-reasoning-background: rgba(var(--md-sys-color-primary-rgb), 0.08);
+  --md-sys-color-error-background: rgba(var(--md-sys-color-error-rgb), 0.08);
 
-    /* Secondary colors */
-    --md-sys-color-secondary-rgb: 184, 204, 181;
-    --md-sys-color-on-secondary-rgb: 35, 52, 36;
-    --md-sys-color-secondary-container-rgb: 57, 75, 57;
-    --md-sys-color-on-secondary-container-rgb: 211, 232, 208;
+  /* ===== RGB VALUES FOR RGBA USAGE (DARK) ===== */
+  /* Primary colors */
+  --md-sys-color-primary-rgb: 94, 201, 168;
+  --md-sys-color-on-primary-rgb: 13, 19, 17;
+  --md-sys-color-primary-container-rgb: 18, 51, 43;
+  --md-sys-color-on-primary-container-rgb: 169, 231, 211;
 
-    /* Tertiary colors */
-    --md-sys-color-tertiary-rgb: 141, 209, 228;
-    --md-sys-color-on-tertiary-rgb: 0, 54, 65;
-    --md-sys-color-tertiary-container-rgb: 0, 78, 93;
-    --md-sys-color-on-tertiary-container-rgb: 174, 236, 255;
+  /* Secondary colors */
+  --md-sys-color-secondary-rgb: 184, 204, 181;
+  --md-sys-color-on-secondary-rgb: 35, 52, 36;
+  --md-sys-color-secondary-container-rgb: 57, 75, 57;
+  --md-sys-color-on-secondary-container-rgb: 211, 232, 208;
 
-    /* Error colors */
-    --md-sys-color-error-rgb: 179, 156, 245;
-    --md-sys-color-on-error-rgb: 30, 18, 51;
-    --md-sys-color-error-container-rgb: 36, 30, 61;
-    --md-sys-color-on-error-container-rgb: 220, 209, 251;
+  /* Tertiary colors */
+  --md-sys-color-tertiary-rgb: 141, 209, 228;
+  --md-sys-color-on-tertiary-rgb: 0, 54, 65;
+  --md-sys-color-tertiary-container-rgb: 0, 78, 93;
+  --md-sys-color-on-tertiary-container-rgb: 174, 236, 255;
 
-    /* Surface colors */
-    --md-sys-color-surface-rgb: 13, 19, 17;
-    --md-sys-color-on-surface-rgb: 231, 238, 234;
-    --md-sys-color-surface-variant-rgb: 16, 23, 21;
-    --md-sys-color-on-surface-variant-rgb: 167, 180, 173;
+  /* Error colors */
+  --md-sys-color-error-rgb: 179, 156, 245;
+  --md-sys-color-on-error-rgb: 30, 18, 51;
+  --md-sys-color-error-container-rgb: 36, 30, 61;
+  --md-sys-color-on-error-container-rgb: 220, 209, 251;
 
-    /* Neutral colors */
-    --md-sys-color-outline-rgb: 124, 137, 131;
-    --md-sys-color-outline-variant-rgb: 39, 50, 45;
+  /* Surface colors */
+  --md-sys-color-surface-rgb: 13, 19, 17;
+  --md-sys-color-on-surface-rgb: 231, 238, 234;
+  --md-sys-color-surface-variant-rgb: 16, 23, 21;
+  --md-sys-color-on-surface-variant-rgb: 167, 180, 173;
 
-    /* Semantic color RGB values */
-    --md-sys-color-success-rgb: 94, 201, 168;
-    --md-sys-color-warning-rgb: 224, 166, 75;
-    --md-sys-color-info-rgb: 94, 201, 168;
-  }
+  /* Neutral colors */
+  --md-sys-color-outline-rgb: 124, 137, 131;
+  --md-sys-color-outline-variant-rgb: 39, 50, 45;
+
+  /* Semantic color RGB values */
+  --md-sys-color-success-rgb: 94, 201, 168;
+  --md-sys-color-warning-rgb: 224, 166, 75;
+  --md-sys-color-info-rgb: 94, 201, 168;
 }
 
 /* ===== UTILITY CLASSES FOR STATE LAYERS ===== */
@@ -366,82 +378,74 @@
 }
 
 /* ===== DARK MODE READABILITY ENHANCEMENTS ===== */
-@media (prefers-color-scheme: dark) {
-  /* Enhanced contrast for navigation and UI text */
-  .nav-rail-label,
-  .nav-rail-icon,
-  mat-toolbar span,
-  .mat-mdc-button:not(.mat-primary):not(.mat-warn):not(.mat-accent) {
-    color: var(--md-sys-color-on-surface) !important;
-  }
+/* Enhanced contrast for navigation and UI text */
 
-  /* Better contrast for form fields and inputs */
-  .mat-mdc-form-field-label,
-  .mat-mdc-input-element {
-    color: var(--md-sys-color-on-surface) !important;
-  }
+[data-theme="dark"] mat-toolbar span,
+[data-theme="dark"] .mat-mdc-button:not(.mat-primary):not(.mat-warn):not(.mat-accent) {
+  color: var(--md-sys-color-on-surface) !important;
+}
 
-  /* Enhanced status indicators visibility */
-  .status-green {
-    color: #4ade80 !important; /* Brighter green for dark mode */
-  }
+/* Better contrast for form fields and inputs */
 
-  .status-red {
-    color: #f87171 !important; /* Brighter red for dark mode */
-  }
+[data-theme="dark"] .mat-mdc-form-field-label,
+[data-theme="dark"] .mat-mdc-input-element {
+  color: var(--md-sys-color-on-surface) !important;
+}
 
-  .status-orange {
-    color: #fbbf24 !important; /* Brighter yellow for dark mode */
-  }
+/* Better contrast for Material cards and panels */
 
-  /* Better contrast for Material cards and panels */
-  .mat-mdc-card,
-  .mat-expansion-panel {
-    background-color: var(--md-sys-color-surface-container) !important;
-    color: var(--md-sys-color-on-surface) !important;
-  }
+[data-theme="dark"] .mat-mdc-card,
+[data-theme="dark"] .mat-expansion-panel {
+  background-color: var(--md-sys-color-surface-container) !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
 
-  /* Enhanced dialog text visibility */
-  .mat-mdc-dialog-title,
-  .mat-mdc-dialog-content {
-    color: var(--md-sys-color-on-surface) !important;
-  }
+/* Enhanced dialog text visibility */
 
-  /* Ensure dialog surfaces have proper dark mode background */
-  .mat-mdc-dialog-surface,
-  .mat-mdc-dialog-container {
-    background-color: var(--md-sys-color-surface-container-high) !important;
-  }
+[data-theme="dark"] .mat-mdc-dialog-title,
+[data-theme="dark"] .mat-mdc-dialog-content {
+  color: var(--md-sys-color-on-surface) !important;
+}
 
-  /* Dialog actions background */
-  .mat-mdc-dialog-actions {
-    background-color: var(--md-sys-color-surface-container-high) !important;
-  }
+/* Ensure dialog surfaces have proper dark mode background */
 
-  /* Better button text contrast */
-  .mat-mdc-button,
-  .mat-mdc-outlined-button,
-  .mat-mdc-raised-button {
-    color: var(--md-sys-color-on-surface) !important;
-  }
+[data-theme="dark"] .mat-mdc-dialog-surface,
+[data-theme="dark"] .mat-mdc-dialog-container {
+  background-color: var(--md-sys-color-surface-container-high) !important;
+}
 
-  /* Enhanced tooltip visibility in dark mode */
-  .mat-mdc-tooltip {
-    background-color: var(--md-sys-color-inverse-surface) !important;
-    color: var(--md-sys-color-inverse-on-surface) !important;
-    font-weight: 500 !important;
-  }
+/* Dialog actions background */
 
-  /* Better Send button contrast */
-  .mat-mdc-button.mat-flat-button {
-    background-color: var(--md-sys-color-primary) !important;
-    color: var(--md-sys-color-on-primary) !important;
-    font-weight: 500 !important;
-  }
+[data-theme="dark"] .mat-mdc-dialog-actions {
+  background-color: var(--md-sys-color-surface-container-high) !important;
+}
 
-  .mat-mdc-button.mat-flat-button:disabled {
-    background-color: var(--md-sys-color-surface-variant) !important;
-    color: var(--md-sys-color-on-surface-variant) !important;
-    opacity: 0.38 !important;
-  }
+/* Better button text contrast */
+
+[data-theme="dark"] .mat-mdc-button,
+[data-theme="dark"] .mat-mdc-outlined-button,
+[data-theme="dark"] .mat-mdc-raised-button {
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+/* Enhanced tooltip visibility in dark mode */
+
+[data-theme="dark"] .mat-mdc-tooltip {
+  background-color: var(--md-sys-color-inverse-surface) !important;
+  color: var(--md-sys-color-inverse-on-surface) !important;
+  font-weight: 500 !important;
+}
+
+/* Better Send button contrast */
+
+[data-theme="dark"] .mat-mdc-button.mat-flat-button {
+  background-color: var(--md-sys-color-primary) !important;
+  color: var(--md-sys-color-on-primary) !important;
+  font-weight: 500 !important;
+}
+
+[data-theme="dark"] .mat-mdc-button.mat-flat-button:disabled {
+  background-color: var(--md-sys-color-surface-variant) !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
+  opacity: 0.38 !important;
 }

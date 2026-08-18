@@ -417,25 +417,23 @@ mat-sidenav-content {
 }
 
 /* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .agent-card {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
+:host-context([data-theme="dark"]) .agent-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
 
-  .agent-card.unhealthy {
-    background-color: rgba(244, 67, 54, 0.08);
-  }
+:host-context([data-theme="dark"]) .agent-card.unhealthy {
+  background-color: rgba(244, 67, 54, 0.08);
+}
 
-  .panel-header,
-  .status-container {
-    border-bottom-color: rgba(255, 255, 255, 0.12);
-  }
+:host-context([data-theme="dark"]) .panel-header,
+:host-context([data-theme="dark"]) .status-container {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
 
-  .empty-state mat-icon {
-    color: rgba(255, 255, 255, 0.3);
-  }
+:host-context([data-theme="dark"]) .empty-state mat-icon {
+  color: rgba(255, 255, 255, 0.3);
+}
 
-  .empty-state {
-    color: rgba(255, 255, 255, 0.6);
-  }
+:host-context([data-theme="dark"]) .empty-state {
+  color: rgba(255, 255, 255, 0.6);
 }

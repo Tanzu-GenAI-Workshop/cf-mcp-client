@@ -50,8 +50,6 @@ html {
 }
 
 // Apply dark theme when user prefers dark mode
-@media (prefers-color-scheme: dark) {
-  html {
-    @include mat.all-component-colors($dark-theme);
-  }
+html[data-theme="dark"] {
+  @include mat.all-component-colors($dark-theme);
 }

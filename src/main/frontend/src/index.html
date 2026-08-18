@@ -7,6 +7,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500&display=swap" rel="stylesheet">
+  <script>
+    /* Resolve the theme before first paint: an explicit choice wins, otherwise
+       follow the system. data-theme is the single source of truth for the CSS. */
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('tpc-theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.dataset.theme = t;
+      document.documentElement.style.colorScheme = t;
+    })();
+  </script>
 </head>
 <body class="mat-typography">
   <app-root></app-root>

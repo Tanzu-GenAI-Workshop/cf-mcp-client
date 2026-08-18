@@ -1,8 +1,56 @@
-/* App container */
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* App container: the whole shell sits as a card floating in the browser, like
+   the faceplate mock, capped well short of the full viewport rather than
+   bleeding to its edges. `contain: layout` makes this box the containing
+   block for the fixed-position header/rail/panels inside it, so they scope
+   to this card instead of the real viewport. */
 .app-container {
-  height: 100vh;
+  width: min(70vw, 1400px);
+  height: min(80vh, 900px);
+  border-radius: 20px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  overflow: hidden;
+  contain: layout;
+  /* as a flex item the card is floored at its content's min-content width,
+     which pushes it past the viewport on a phone; opt out of that floor */
+  min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* Desktop: the rail is six square cells (five destinations + sign out), so the
+   card's height is derived from the cell rather than picked. When the viewport
+   is too short for a full-size cell, the cell shrinks and takes the rail width
+   with it, so the cells stay square at any window size. The two-step indirection
+   through --fp-cell avoids a self-referential custom property. */
+@media (min-width: 600px) {
+  :host {
+    --fp-cell: min(var(--md-nav-rail-width),
+                   calc((80vh - var(--md-toolbar-height)) / 6));
+  }
+
+  .app-container {
+    --md-nav-rail-width: var(--fp-cell);
+    height: calc(var(--md-toolbar-height) + 6 * var(--fp-cell));
+  }
+}
+
+@media (max-width: 599px) {
+  /* mobile: near-full viewport, but inset far enough that the rounded edge and
+     hairline read as a portal rather than being clipped by the screen edge */
+  .app-container {
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+    border-radius: 22px;
+    /* six square cells across the card's width */
+    --md-bottom-nav-height: calc((100vw - 16px) / 6);
+  }
 }
 
 /* Header CSS */
@@ -57,7 +105,8 @@ aside[role="complementary"] {
 
 /* Main content wrapper using responsive system */
 main[role="main"] {
-  height: 100vh;
+  flex: 1;
+  min-height: 0;
   box-sizing: border-box;
   background-color: var(--md-sys-color-surface);
 }
@@ -97,3 +146,41 @@ app-memory-panel {
     height: var(--md-toolbar-height);
   }
 }
+
+/* Theme toggle: a quiet ghost control beside the title — the same hairline
+   language as the status pills, so it reads as chrome rather than an action. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  margin-inline-start: var(--md-spacing-2);
+  padding: 0;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short, 150ms) var(--md-sys-motion-easing-standard),
+              color var(--md-sys-motion-duration-short, 150ms) var(--md-sys-motion-easing-standard);
+}
+
+.theme-toggle:hover {
+  background: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.theme-toggle mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+.theme-toggle mat-icon svg { width: 18px; height: 18px; display: block; }

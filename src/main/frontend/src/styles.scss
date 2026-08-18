@@ -14,6 +14,8 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: var(--md-sys-typescale-font-family-plain);
+  /* backdrop behind the app card's margin and rounded corners */
+  background: var(--md-sys-color-surface-dim);
 }
 
 /* Material Dialog overrides to prevent horizontal scrolling */
@@ -43,10 +45,8 @@ b, strong { font-weight: 500; }
 }
 
 /* Dark mode backdrop */
-@media (prefers-color-scheme: dark) {
-  .mat-drawer-backdrop.mat-drawer-shown {
-    background-color: rgba(0, 0, 0, 0.6) !important;
-  }
+[data-theme="dark"] .mat-drawer-backdrop.mat-drawer-shown {
+  background-color: rgba(0, 0, 0, 0.6) !important;
 }
 
 /* When a panel is open, give back its width so the composer's Send button is
@@ -59,6 +59,10 @@ b, strong { font-weight: 500; }
 
 /* Ensure chatbox area is never affected */
 .chatbox {
+  /* the thread has to give up its width at exactly the rate the panel takes it,
+     or the resize reads as a jump. Material's drawer slides on 400ms
+     cubic-bezier(.25,.8,.25,1), so match that curve rather than a house token. */
+  transition: right var(--md-sys-motion-duration-medium4, 400ms) cubic-bezier(0.25, 0.8, 0.25, 1);
   position: fixed;
   bottom: 0;
   left: 0;
@@ -87,4 +91,25 @@ b, strong { font-weight: 500; }
 
 .mat-mdc-snack-bar-action {
   color: var(--md-sys-color-inverse-primary) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chatbox { transition: none; }
+}
+
+/* Icon glyphs are injected into <mat-icon> by MatIconRegistry at runtime, so
+   they carry no _ngcontent attribute and component-scoped rules cannot reach
+   them. These have to live here.
+
+   The set is drawn at stroke-width 2.1, tuned for a ~20px glyph. The rail draws
+   at 40px and the bottom bar at 28px, where that stroke scales up and the
+   destinations read heavy — so the nav asks for a lighter one. */
+.nav-rail-icon svg,
+.bottom-nav-icon svg {
+  stroke-width: 1.7;
+}
+
+/* an inline svg rides the text baseline and sits ~3px low in its own box */
+.nav-rail-state svg,
+.bottom-nav-state svg {
+  display: block;
 }

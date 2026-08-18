@@ -3,6 +3,14 @@
     <mat-toolbar>
       <mat-icon class="app-mark" svgIcon="fp-chat" aria-hidden="true"></mat-icon>
       <h1 class="app-title">Tanzu Platform Chat</h1>
+      <button type="button"
+              class="theme-toggle"
+              (click)="toggleTheme()"
+              [attr.aria-label]="theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+              [attr.aria-pressed]="theme() === 'dark'"
+              matTooltip="{{ theme() === 'dark' ? 'Light mode' : 'Dark mode' }}">
+        <mat-icon [svgIcon]="theme() === 'dark' ? 'fp-sun' : 'fp-moon'" aria-hidden="true"></mat-icon>
+      </button>
       <span style="flex:1 1 auto"></span>
       <div class="topbar-status">
         <span class="fp-pill fp-pill--mono">
