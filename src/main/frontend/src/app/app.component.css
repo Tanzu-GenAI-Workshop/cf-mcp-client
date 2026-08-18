@@ -15,7 +15,13 @@
   height: min(80vh, 900px);
   border-radius: 20px;
   border: 1px solid var(--md-sys-color-outline-variant);
-  overflow: hidden;
+  /* clip, not hidden: a closed mat-sidenav parks itself 380px to the right, so
+     the card has overflowing content. `hidden` still makes a scroll container,
+     and Material focusing inside the drawer makes the browser scroll the card
+     to reveal it — with no way to scroll back, the whole shell sits offset.
+     `clip` cannot be scrolled at all. `contain: layout` below is what keeps the
+     fixed header, rail and panels anchored to this card. */
+  overflow: clip;
   contain: layout;
   /* as a flex item the card is floored at its content's min-content width,
      which pushes it past the viewport on a phone; opt out of that floor */
