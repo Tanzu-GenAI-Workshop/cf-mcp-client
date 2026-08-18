@@ -19,6 +19,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 /**
  * Utility factory for creating MCP clients with consistent configuration.
@@ -62,20 +63,20 @@ public class McpClientFactory {
      * Creates a new MCP synchronous client for health checks with specified protocol.
      */
     public McpSyncClient createHealthCheckClient(String serverUrl, ProtocolType protocol) {
-        return createHealthCheckClient(serverUrl, protocol, Map.of());
+        return createHealthCheckClient(serverUrl, protocol, () -> Map.of());
     }
 
     /**
      * Creates a new MCP synchronous client for health checks with specified protocol and headers.
      */
-    public McpSyncClient createHealthCheckClient(String serverUrl, ProtocolType protocol, Map<String, String> headers) {
+    public McpSyncClient createHealthCheckClient(String serverUrl, ProtocolType protocol, Supplier<Map<String, String>> headerSupplier) {
         return switch (protocol) {
             case ProtocolType.StreamableHttp streamableHttp ->
-                    createStreamableClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT, headers);
+                    createStreamableClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT, headerSupplier);
             case ProtocolType.SSE sse ->
-                    createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT, headers);
+                    createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT, headerSupplier);
             case ProtocolType.Legacy legacy ->
-                    createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT, headers);
+                    createSseClient(serverUrl, HEALTH_CHECK_TIMEOUT, HEALTH_CHECK_TIMEOUT, headerSupplier);
         };
     }
 
@@ -93,15 +94,15 @@ public class McpClientFactory {
      * Registers a tools change consumer to publish McpToolsChangedEvent for cache invalidation.
      */
     public McpSyncClient createSseClient(String serverUrl, Duration connectTimeout, Duration requestTimeout) {
-        return createSseClient(serverUrl, connectTimeout, requestTimeout, Map.of());
+        return createSseClient(serverUrl, connectTimeout, requestTimeout, () -> Map.of());
     }
 
     /**
      * Creates a new MCP synchronous client using SSE protocol with custom timeout configuration and headers.
      * Registers a tools change consumer to publish McpToolsChangedEvent for cache invalidation.
      */
-    public McpSyncClient createSseClient(String serverUrl, Duration connectTimeout, Duration requestTimeout, Map<String, String> headers) {
-        HttpClient.Builder clientBuilder = createHttpClientBuilder(connectTimeout, headers);
+    public McpSyncClient createSseClient(String serverUrl, Duration connectTimeout, Duration requestTimeout, Supplier<Map<String, String>> headerSupplier) {
+        HttpClient.Builder clientBuilder = createHttpClientBuilder(connectTimeout, headerSupplier);
 
         HttpClientSseClientTransport transport = HttpClientSseClientTransport.builder(serverUrl)
                 .clientBuilder(clientBuilder)
@@ -123,15 +124,15 @@ public class McpClientFactory {
      * Registers a tools change consumer to publish McpToolsChangedEvent for cache invalidation.
      */
     public McpSyncClient createStreamableClient(String serverUrl, Duration connectTimeout, Duration requestTimeout) {
-        return createStreamableClient(serverUrl, connectTimeout, requestTimeout, Map.of());
+        return createStreamableClient(serverUrl, connectTimeout, requestTimeout, () -> Map.of());
     }
 
     /**
      * Creates a new MCP synchronous client using Streamable HTTP protocol with custom timeout configuration and headers.
      * Registers a tools change consumer to publish McpToolsChangedEvent for cache invalidation.
      */
-    public McpSyncClient createStreamableClient(String serverUrl, Duration connectTimeout, Duration requestTimeout, Map<String, String> headers) {
-        HttpClient.Builder clientBuilder = createHttpClientBuilder(connectTimeout, headers);
+    public McpSyncClient createStreamableClient(String serverUrl, Duration connectTimeout, Duration requestTimeout, Supplier<Map<String, String>> headerSupplier) {
+        HttpClient.Builder clientBuilder = createHttpClientBuilder(connectTimeout, headerSupplier);
 
         HttpClientStreamableHttpTransport transport = HttpClientStreamableHttpTransport.builder(serverUrl)
                 .clientBuilder(clientBuilder)
@@ -150,7 +151,7 @@ public class McpClientFactory {
     }
 
     private HttpClient.Builder createHttpClientBuilder(Duration connectTimeout) {
-        return createHttpClientBuilder(connectTimeout, Map.of());
+        return createHttpClientBuilder(connectTimeout, () -> Map.of());
     }
 
     /**
@@ -158,12 +159,12 @@ public class McpClientFactory {
      * Since HttpClient.Builder doesn't support default headers directly, we create a custom
      * builder that wraps the base builder and produces a client that adds headers to all requests.
      */
-    private HttpClient.Builder createHttpClientBuilder(Duration connectTimeout, Map<String, String> headers) {
+    private HttpClient.Builder createHttpClientBuilder(Duration connectTimeout, Supplier<Map<String, String>> headerSupplier) {
         HttpClient.Builder baseBuilder = HttpClient.newBuilder()
                 .sslContext(sslContext)
                 .connectTimeout(connectTimeout);
 
-        if (headers.isEmpty()) {
+        if (headerSupplier == null) {
             return baseBuilder;
         }
 
@@ -172,7 +173,7 @@ public class McpClientFactory {
             @Override
             public HttpClient build() {
                 HttpClient baseClient = baseBuilder.build();
-                return createHttpClientWithHeaders(baseClient, headers);
+                return createHttpClientWithHeaders(baseClient, headerSupplier);
             }
 
             @Override
@@ -241,23 +242,23 @@ public class McpClientFactory {
      * Creates an HttpClient that wraps requests to add custom headers.
      * This is a workaround since HttpClient.Builder doesn't support default headers.
      */
-    private HttpClient createHttpClientWithHeaders(HttpClient baseClient, Map<String, String> headers) {
+    private HttpClient createHttpClientWithHeaders(HttpClient baseClient, Supplier<Map<String, String>> headerSupplier) {
         return new HttpClient() {
             @Override
             public <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler) throws java.io.IOException, InterruptedException {
-                HttpRequest requestWithHeaders = addHeadersToRequest(request, headers);
+                HttpRequest requestWithHeaders = addHeadersToRequest(request, headerSupplier.get());
                 return baseClient.send(requestWithHeaders, responseBodyHandler);
             }
 
             @Override
             public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler) {
-                HttpRequest requestWithHeaders = addHeadersToRequest(request, headers);
+                HttpRequest requestWithHeaders = addHeadersToRequest(request, headerSupplier.get());
                 return baseClient.sendAsync(requestWithHeaders, responseBodyHandler);
             }
 
             @Override
             public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler, HttpResponse.PushPromiseHandler<T> pushPromiseHandler) {
-                HttpRequest requestWithHeaders = addHeadersToRequest(request, headers);
+                HttpRequest requestWithHeaders = addHeadersToRequest(request, headerSupplier.get());
                 return baseClient.sendAsync(requestWithHeaders, responseBodyHandler, pushPromiseHandler);
             }
 

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -171,7 +172,7 @@ public class McpDiscoveryService {
             return null;
         }
 
-        Map<String, String> headers = extractHeaders(credentials);
+        Supplier<Map<String, String>> headerSupplier = createHeaderSupplier(credentials);
 
         // Check for mcpStreamableURL tag
         if (service.existsByTagIgnoreCase(TAG_MCP_STREAMABLE)) {
@@ -183,7 +184,7 @@ public class McpDiscoveryService {
                     service.getName(),
                     uri,
                     new ProtocolType.StreamableHttp(),
-                    headers
+                    headerSupplier
                 );
             }
         }
@@ -198,7 +199,7 @@ public class McpDiscoveryService {
                     service.getName(),
                     uri,
                     new ProtocolType.SSE(),
-                    headers
+                    headerSupplier
                 );
             }
         }
@@ -217,7 +218,7 @@ public class McpDiscoveryService {
         }
 
         Map<String, Object> credentialsMap = credentials.getMap();
-        Map<String, String> headers = extractHeaders(credentials);
+        Supplier<Map<String, String>> headerSupplier = createHeaderSupplier(credentials);
 
         // Check keys in priority order
         if (credentialsMap.containsKey(MCP_STREAMABLE_URL)) {
@@ -225,7 +226,7 @@ public class McpDiscoveryService {
             if (isValidUrl(url)) {
                 logger.debug("Found legacy MCP Streamable service '{}' via credentials",
                     service.getName());
-                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.StreamableHttp(), headers);
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.StreamableHttp(), headerSupplier);
             }
         }
 
@@ -234,7 +235,7 @@ public class McpDiscoveryService {
             if (isValidUrl(url)) {
                 logger.debug("Found legacy MCP SSE service '{}' via credentials",
                     service.getName());
-                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.SSE(), headers);
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.SSE(), headerSupplier);
             }
         }
 
@@ -244,7 +245,7 @@ public class McpDiscoveryService {
             if (isValidUrl(url)) {
                 logger.debug("Found legacy MCP service '{}' via credentials with mcpServiceURL",
                     service.getName());
-                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.Legacy(), headers);
+                return new McpServiceConfiguration(service.getName(), url, new ProtocolType.Legacy(), headerSupplier);
             }
         }
 
@@ -259,8 +260,34 @@ public class McpDiscoveryService {
     }
 
     /**
-     * Extracts headers from service credentials.
+     * Creates a supplier that extracts headers from service credentials.
+     * Caches the result for 10 minutes to avoid repeated token fetches while
+     * still allowing for token refresh.
+     * 
+     * @param credentials The Cloud Foundry service credentials
+     * @return Supplier providing Map of header names to header values
+     */
+    private Supplier<Map<String, String>> createHeaderSupplier(CfCredentials credentials) {
+        return new Supplier<Map<String, String>>() {
+            private Map<String, String> cachedHeaders = null;
+            private long expirationTime = 0;
+
+            @Override
+            public synchronized Map<String, String> get() {
+                if (System.currentTimeMillis() > expirationTime) {
+                    cachedHeaders = extractHeaders(credentials);
+                    // Cache for 10 minutes (600,000 ms)
+                    expirationTime = System.currentTimeMillis() + 600_000;
+                }
+                return cachedHeaders;
+            }
+        };
+    }
+
+    /**
+     * Extracts headers from service credentials immediately.
      * Looks for a 'headers' key in credentials and extracts all header key-value pairs.
+     * Also fetches OAuth tokens if 'oauth' credentials are provided.
      * 
      * @param credentials The Cloud Foundry service credentials
      * @return Map of header names to header values, empty map if no headers found
@@ -330,13 +357,13 @@ public class McpDiscoveryService {
             String serviceName,
             String serverUrl,
             ProtocolType protocol,
-            Map<String, String> headers
+            Supplier<Map<String, String>> headerSupplier
     ) {
         /**
          * Constructor with default empty headers for backward compatibility.
          */
         public McpServiceConfiguration(String serviceName, String serverUrl, ProtocolType protocol) {
-            this(serviceName, serverUrl, protocol, Map.of());
+            this(serviceName, serverUrl, protocol, () -> Map.of());
         }
     }
 }
