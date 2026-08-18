@@ -433,7 +433,6 @@
 [data-theme="dark"] .mat-mdc-tooltip {
   background-color: var(--md-sys-color-inverse-surface) !important;
   color: var(--md-sys-color-inverse-on-surface) !important;
-  font-weight: 500 !important;
 }
 
 /* Better Send button contrast */
@@ -441,7 +440,6 @@
 [data-theme="dark"] .mat-mdc-button.mat-flat-button {
   background-color: var(--md-sys-color-primary) !important;
   color: var(--md-sys-color-on-primary) !important;
-  font-weight: 500 !important;
 }
 
 [data-theme="dark"] .mat-mdc-button.mat-flat-button:disabled {

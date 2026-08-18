@@ -54,6 +54,7 @@
   margin-inline: auto;
   margin-bottom: var(--md-spacing-3); /* 12px using Material spacing */
   padding: var(--md-spacing-4); /* Increased padding for better visual separation */
+  box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: var(--md-sys-color-outline-variant) transparent;
   /* Faceplate: the thread is the page, not a box inside it. */
@@ -147,19 +148,21 @@
 }
 
 /* Bot message cards - implement MD3 ELEVATED variant */
+/* The reply is distinguished from the outgoing message by its surface alone.
+   surface-container-low sits within ~1 step of the user bubble's
+   surface-variant in dark, which the shadow had been papering over; the
+   container tone separates cleanly in both themes. */
 .md3-chat-card[data-card-variant="bot"] {
-  background-color: var(--md-sys-color-surface-container-low) !important;
-  border: none !important; /* Remove outlined border for elevated variant */
-  /* MD3 1dp elevation using new elevation system */
-  box-shadow: var(--md-sys-elevation-1dp);
+  background-color: var(--md-sys-color-surface-container) !important;
+  border: none !important;
+  box-shadow: none;
 }
 
 /* Agent message cards - implement MD3 ELEVATED variant with tertiary container */
 .md3-chat-card[data-card-variant="agent"] {
   background-color: var(--md-sys-color-tertiary-container) !important;
-  border: none !important; /* Remove outlined border for elevated variant */
-  /* MD3 1dp elevation using new elevation system */
-  box-shadow: var(--md-sys-elevation-1dp);
+  border: none !important;
+  box-shadow: none;
 }
 
 .md3-chat-card[data-card-variant="agent"] mat-card-content {
@@ -239,10 +242,10 @@
 
 /* Base state layer setup for chat cards */
 .md3-chat-card {
-  /* Inherit state layer base properties */
+  /* A message is read, not operated — no pointer, and no hover or pressed
+     state layer. Focus is kept, so keyboard users still get a visible target. */
   position: relative;
   overflow: hidden;
-  cursor: pointer;
 }
 
 .md3-chat-card::before {
@@ -261,35 +264,15 @@
 }
 
 /* User message card state layers */
-.chat-message:hover .md3-chat-card[data-card-variant="user"]::before {
-  background-color: var(--md-sys-color-on-surface-variant);
-  opacity: var(--md-sys-state-hover-opacity);
-}
-
 .chat-message .md3-chat-card[data-card-variant="user"]:focus-visible::before {
   background-color: var(--md-sys-color-on-surface-variant);
   opacity: var(--md-sys-state-focus-opacity);
 }
 
-.chat-message .md3-chat-card[data-card-variant="user"]:active::before {
-  background-color: var(--md-sys-color-on-surface-variant);
-  opacity: var(--md-sys-state-pressed-opacity);
-}
-
 /* Bot message card state layers */
-.chat-message:hover .md3-chat-card[data-card-variant="bot"]::before {
-  background-color: var(--md-sys-color-on-surface);
-  opacity: var(--md-sys-state-hover-opacity);
-}
-
 .chat-message .md3-chat-card[data-card-variant="bot"]:focus-visible::before {
   background-color: var(--md-sys-color-on-surface);
   opacity: var(--md-sys-state-focus-opacity);
-}
-
-.chat-message .md3-chat-card[data-card-variant="bot"]:active::before {
-  background-color: var(--md-sys-color-on-surface);
-  opacity: var(--md-sys-state-pressed-opacity);
 }
 
 /* Material Design 3 focus rings for accessibility */
@@ -298,18 +281,16 @@
   outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
 }
 
-/* Elevation changes on hover - elevated cards increase to 3dp per MD3 spec */
-.chat-message:hover .md3-chat-card[data-card-variant="bot"] {
-  /* MD3 3dp elevation using new elevation system */
-  box-shadow: var(--md-sys-elevation-3dp);
-}
-
 /* ===== MATERIAL DESIGN 3 CHAT INPUT AREA ===== */
 .chatbox-footer {
   margin-bottom: var(--md-spacing-4);
   width: 100%;
   max-width: 820px;
   margin-inline: auto;
+  /* match the transcript's inner padding and box model, or the composer sits
+     16px wider than the messages above it */
+  padding-inline: var(--md-spacing-4);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--md-spacing-2);
@@ -731,7 +712,6 @@ button:active:not(:disabled) {
 :host-context([data-theme="dark"]) .chatbox-footer button[mat-flat-button] {
   background-color: var(--md-sys-color-primary) !important;
   color: var(--md-sys-color-on-primary) !important;
-  font-weight: 500 !important;
 }
 
 :host-context([data-theme="dark"]) .chatbox-footer button[mat-flat-button]:disabled {

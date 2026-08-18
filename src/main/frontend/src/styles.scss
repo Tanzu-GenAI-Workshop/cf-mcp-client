@@ -113,3 +113,13 @@ b, strong { font-weight: 500; }
 .bottom-nav-state svg {
   display: block;
 }
+
+/* Light text on a dark ground reads optically heavier than the same weight
+   dark-on-light, and macOS subpixel smoothing widens the strokes further.
+   Computed font-weight is already identical across the two themes — measured —
+   so the difference is purely in rendering. Greyscale-antialias the dark theme
+   to bring it back to the lighter of the two. */
+html[data-theme="dark"] body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
