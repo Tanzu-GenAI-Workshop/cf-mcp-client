@@ -15,6 +15,8 @@ import { DOCUMENT } from '@angular/common';
 import { interval } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SidenavService } from '../services/sidenav.service';
+import { StatusChangeService } from '../services/status-change.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { startWith, switchMap, retry, shareReplay, catchError, of } from 'rxjs';
 
 @Component({
@@ -93,7 +95,42 @@ export class AppComponent {
     }
   });
 
+  private readonly statusChanges = inject(StatusChangeService);
+  private readonly snackBar = inject(MatSnackBar);
+
+  /** null until the first poll lands, so start-up is not reported as a change. */
+  private previousModel: string | null = null;
+
   constructor() {
+    // Flag anything whose status moved since the last poll, so the UI can dwell
+    // on it briefly. Signatures are derived from the raw metrics rather than the
+    // rendered badge, so this stays independent of how the nav draws state.
+    effect(() => {
+      const m = this.metrics();
+      const health = (items: { healthy: boolean }[]) =>
+        `${items.filter(i => i.healthy).length}/${items.length}`;
+
+      this.statusChanges.track({
+        model: m.chatModel || '',
+        chat: m.chatModel ? 'bound' : 'unbound',
+        document: m.embeddingModel ? 'bound' : 'unbound',
+        memory: m.conversationId ? 'bound' : 'unbound',
+        'mcp-servers': health(m.mcpServers),
+        agents: health(m.a2aAgents)
+      });
+
+      // Binding a model is the one change worth naming in words.
+      const model = m.chatModel || '';
+      if (this.previousModel !== null && model !== this.previousModel) {
+        this.snackBar.open(
+          model ? `Chat model bound — ${model}` : 'Chat model unbound',
+          'Dismiss',
+          { duration: 5000 }
+        );
+      }
+      this.previousModel = model;
+    });
+
     // Use effect for side effects based on signal changes
     effect(() => {
       const documentIds = this.currentDocumentIds();
@@ -101,6 +138,11 @@ export class AppComponent {
         console.log('Documents selected with IDs:', documentIds);
       }
     });
+  }
+
+  /** True while this key's status counts as recently changed. */
+  statusChanged(key: string): boolean {
+    return this.statusChanges.isChanged(key);
   }
 
   // Method to handle document selection from DocumentPanelComponent

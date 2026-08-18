@@ -13,11 +13,12 @@
       </button>
       <span style="flex:1 1 auto"></span>
       <div class="topbar-status">
-        <span class="fp-pill fp-pill--mono">
+        <span class="fp-pill fp-pill--mono" [class.status-changed]="statusChanged('model')">
           <mat-icon svgIcon="fp-model" aria-hidden="true"></mat-icon>
           {{ metrics().chatModel || 'no model bound' }}
         </span>
         <span class="fp-pill"
+              [class.status-changed]="statusChanged('model')"
               [class.fp-pill--ready]="metrics().chatModel !== ''"
               [class.fp-pill--offline]="metrics().chatModel === ''"
               role="status">

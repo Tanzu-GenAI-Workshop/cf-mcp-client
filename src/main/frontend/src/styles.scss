@@ -123,3 +123,30 @@ html[data-theme="dark"] body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* ===== RECENT STATUS CHANGE =====
+   Metrics are polled, so a change surfaces up to one interval late — this says
+   "moved recently", not "moved just now", which is why it dwells rather than
+   flashing. A ring rises fast, holds for most of five seconds, then fades.
+   Drawn with box-shadow rather than a pseudo-element so it needs no positioning
+   context: the badges are already absolutely positioned and the pills are not.
+   currentColor means the ring inherits whatever state it is announcing. */
+.status-changed {
+  border-radius: 999px;
+  animation: fp-status-afterglow 5s var(--md-sys-motion-easing-standard, ease) forwards;
+}
+
+@keyframes fp-status-afterglow {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+  6%   { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 38%, transparent); }
+  90%  { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 38%, transparent); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+
+/* no motion: the ring simply holds for the five seconds the class is applied */
+@media (prefers-reduced-motion: reduce) {
+  .status-changed {
+    animation: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 38%, transparent);
+  }
+}

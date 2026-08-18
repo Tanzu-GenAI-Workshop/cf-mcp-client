@@ -6,6 +6,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../services/auth.service';
 import { PlatformMetrics } from '../app.component';
 
+import { StatusChangeService } from '../../services/status-change.service';
+
 @Component({
   selector: 'app-bottom-navigation',
   standalone: true,
@@ -14,6 +16,13 @@ import { PlatformMetrics } from '../app.component';
   styleUrl: './bottom-navigation.css'
 })
 export class BottomNavigationComponent {
+  private readonly statusChanges = inject(StatusChangeService);
+
+  /** True while this destination's status counts as recently changed. */
+  statusChanged(key: string): boolean {
+    return this.statusChanges.isChanged(key);
+  }
+
   @Input() metrics: PlatformMetrics = {
     conversationId: '',
     chatModel: '',

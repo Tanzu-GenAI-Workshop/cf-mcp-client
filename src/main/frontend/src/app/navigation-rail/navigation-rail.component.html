@@ -19,6 +19,7 @@
             @if (getStatusIndicator(item.id).show) {
               <mat-icon
                 class="nav-rail-state"
+                [class.status-changed]="statusChanged(item.id)"
                 [ngClass]="getStatusIndicator(item.id).color"
                 [svgIcon]="getStatusIndicator(item.id).icon"
                 [attr.aria-hidden]="true"></mat-icon>

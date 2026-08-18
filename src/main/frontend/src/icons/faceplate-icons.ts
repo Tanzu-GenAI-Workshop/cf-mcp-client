@@ -41,9 +41,13 @@ export const FACEPLATE_ICONS: Record<string, string> = {
     <circle cx="12.2" cy="18" r="0.85" fill="currentColor" stroke="none"/>
     <circle cx="15" cy="18" r="0.85" fill="currentColor" stroke="none"/>`),
 
-  'fp-mcp': svg(`<rect x="4" y="6.5" width="10.5" height="11" rx="2.5"/><path d="M1.6 12H4"/>
-    <path d="M14.5 9.2h4M14.5 12h4M14.5 14.8h4"/>
-    <circle cx="19.8" cy="9.2" r="1.1"/><circle cx="19.8" cy="12" r="1.1"/><circle cx="19.8" cy="14.8" r="1.1"/>`),
+  // Two stacked rack units with a live indicator on each: an MCP server is a
+  // process you connect to, not a peripheral you plug in.
+  'fp-mcp': svg(`<rect x="3.4" y="3.8" width="17.2" height="7" rx="2.2"/>
+    <rect x="3.4" y="13.2" width="17.2" height="7" rx="2.2"/>
+    <circle cx="7" cy="7.3" r="0.95" fill="currentColor" stroke="none"/>
+    <circle cx="7" cy="16.7" r="0.95" fill="currentColor" stroke="none"/>
+    <path d="M10.6 7.3h6.4M10.6 16.7h6.4"/>`),
 
   'fp-agents': svg(`<path d="M12 2.8 18.9 6.7v7.8L12 18.4 5.1 14.5V6.7z"/>
     <circle cx="9.9" cy="10.2" r="0.95" fill="currentColor" stroke="none"/>

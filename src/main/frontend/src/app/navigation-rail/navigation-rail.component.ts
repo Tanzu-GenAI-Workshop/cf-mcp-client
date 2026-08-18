@@ -7,6 +7,8 @@ import { SidenavService } from '../../services/sidenav.service';
 import { AuthService } from '../../services/auth.service';
 import { PlatformMetrics } from '../app.component';
 
+import { StatusChangeService } from '../../services/status-change.service';
+
 @Component({
   selector: 'app-navigation-rail',
   standalone: true,
@@ -15,6 +17,13 @@ import { PlatformMetrics } from '../app.component';
   styleUrl: './navigation-rail.component.css'
 })
 export class NavigationRailComponent {
+  private readonly statusChanges = inject(StatusChangeService);
+
+  /** True while this destination's status counts as recently changed. */
+  statusChanged(key: string): boolean {
+    return this.statusChanges.isChanged(key);
+  }
+
   @Input() metrics: PlatformMetrics = {
     conversationId: '',
     chatModel: '',
